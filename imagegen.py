@@ -1,6 +1,5 @@
 import torch
-#from diffusers import StableDiffusionPipeline
-from diffusers import FluxPipeline
+from diffusers import StableDiffusionPipeline
 import librosa
 from PIL import Image
 import numpy as np
@@ -16,8 +15,7 @@ class NoiseVisualizer:
     def __init__(self, device="mps", weightType=torch.float16):
         self.device = device
         self.weightType = weightType
-        #self.pipe = StableDiffusionPipeline.from_pretrained("IDKiro/sdxs-512-dreamshaper", torch_dtype=weightType)
-        self.pipe = FluxPipeline.from_pretrained("black-forest-labs/FLUX.1-schnell", torch_dtype=torch.bfloat16)
+        self.pipe = StableDiffusionPipeline.from_pretrained("IDKiro/sdxs-512-dreamshaper", torch_dtype=weightType)
         self.textEncoder = self.pipe.text_encoder
         self.tokenizer = self.pipe.tokenizer
         
