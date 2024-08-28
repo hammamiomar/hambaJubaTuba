@@ -92,7 +92,7 @@ class NoiseVisualizer:
         
         
       
-    def getVisuals(self, latents, promptEmbeds, guidance_scale = 0.3, batch_size=1):
+    def getVisuals(self, latents, promptEmbeds, num_inference_steps=1,guidance_scale = 0.3, batch_size=1):
         #self.pipe.vae = self.vae
         self.pipe.to(device=self.device, dtype=self.weightType)
         
@@ -104,9 +104,9 @@ class NoiseVisualizer:
         num_frames = latents.shape[0]
         
         for i in range(0, num_frames, batch_size):
-            frames = self.pipe(prompt_embeds=promptEmbeds[i],
-                                guidance_scale=guidance_scale,
-                                num_inference_steps=4,
+            frames = self.pipe(prompt_embeds = promptEmbeds[i],
+                                guidance_scale = guidance_scale,
+                                num_inference_steps = num_inference_steps,
                                 latents=latents[i:i+batch_size],
                                 output_type="pil").images
             allFrames.extend(frames)

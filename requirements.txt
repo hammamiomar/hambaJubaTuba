@@ -1,0 +1,4 @@
+diffusers
+torch
+librosa
+moviepy
