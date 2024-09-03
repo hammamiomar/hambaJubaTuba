@@ -1,4 +1,11 @@
 # DiffusionMusicVisualizer
+
+
+
+
+https://github.com/user-attachments/assets/55479a5c-3014-48a2-b82c-45c911d435e9
+
+
 A music visualizer which creates visualizations via stable diffusion XS and audio features via librosa.
 
 Idea is that I can take music signals(tempo,pitch) and then have them follow a a 2d trajectory which translates to the latent space being modified in the stable diffusion inference, generating music visualizations as parts of the image shift according to different signals shifting in the song. 
