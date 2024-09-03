@@ -1,5 +1,7 @@
 outputs/
 songs/
+audio.ipynb
+main.ipynb
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

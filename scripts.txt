@@ -1,0 +1,11 @@
+ python main.py --song "songs/xtasisCarnal.mp3" --output "outputs/xtasis7Guidance7.5.mp4" --alpha 0.5 --guidance 7.5 
+ && python main.py --song "songs/Afrodititita.mp3" --output "outputs/AfroNew6.mp4" --alpha 0.6 
+ && python main.py --song "songs/Afrodititita.mp3" --output "outputs/AfroNew5.mp4" --alpha 0.5
+  && python main.py --song "songs/xtasisCarnal.mp3" --output "outputs/xtasis7.mp4" --alpha 0.7
+
+  python main.py --song "songs/earl.mp3" --output "outputs/earl.mp4" --alpha 0.85 --distance 0.5 --seed 42069
+
+python main.py --song "songs/earl.mp3" --output "outputs/earl3.mp4" --alpha 0.8 --distance 0.25 --seed 42069
+
+python main.py --song "songs/earl.mp3" --output "outputs/earl4.mp4" --alpha 0.8 --distance 0.25 --seed 42069
+boost=2.5, decay 0.7, boost thresh 0.5

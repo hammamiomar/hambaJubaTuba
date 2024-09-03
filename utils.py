@@ -37,11 +37,3 @@ def create_mp4_from_pil_images(image_array, output_path, song, fps):
     # Write the result to a file
     video.write_videofile(output_path, fps=fps, audio_codec='aac')
     
-def create_output_txt(output_path, song, hop_length, distance, base_prompt, target_prompt_chroma_scale):
-    with open(output_path + ".txt", "w") as file:
-        file.write("Output Video: " + output_path + "\n")
-        file.write("Song: " + song + "\n")
-        file.write("Hop Length: " + str(hop_length) + "\n")
-        file.write("Distance: " + str(distance) + "\n")
-        file.write("Base Prompt: " + base_prompt + "\n")
-        file.write("Target Prompt Chroma Scale: " + str(target_prompt_chroma_scale) + "\n")
