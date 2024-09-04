@@ -3,7 +3,7 @@
 
 
 
-https://github.com/user-attachments/assets/55479a5c-3014-48a2-b82c-45c911d435e9
+[![Sample](https://img.youtube.com/vi/bJ7pwREHQSk/0.jpg)](https://www.youtube.com/watch?v=bJ7pwREHQSk)
 
 
 A music visualizer which creates visualizations via stable diffusion XS and audio features via librosa.
