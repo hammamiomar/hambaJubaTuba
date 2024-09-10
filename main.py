@@ -4,7 +4,7 @@ from imagegen import NoiseVisualizer
 from utils import create_mp4_from_pil_images
 import torch
 
-def main(song, output_path, seed, hop_length, distance, base_prompt, target_prompts, alpha, guidance_scale):
+def main(song, output_path, seed, hop_length, distance, base_prompt, target_prompts, alpha, guidance_scale, decay_rate, boost_factor, boost_threshold):
     device = "mps" if torch.backends.mps.is_available() else "cpu"
     visualizer = NoiseVisualizer(device=device, seed=seed)
 
@@ -16,8 +16,12 @@ def main(song, output_path, seed, hop_length, distance, base_prompt, target_prom
     prompt_embeds = visualizer.getPromptEmbeds(basePrompt=base_prompt, 
                                                targetPromptChromaScale=target_prompts, 
                                                method="slerp", 
-                                               alpha=alpha)
+                                               alpha=alpha,
+                                               decay_rate=decay_rate,
+                                               boost_factor=boost_factor,
+                                               boost_threshold=boost_threshold)
 
+    print(latents.shape)
     images = visualizer.getVisuals(latents=latents, 
                                    promptEmbeds=prompt_embeds, 
                                    guidance_scale=guidance_scale)
@@ -49,8 +53,10 @@ if __name__ == "__main__":
                            "turkish rug in a room", 
                            "horse"], help="List of target prompts for chroma scaling.")
     parser.add_argument("--alpha", type=float, default=0.8, help="Alpha value for prompt interpolation.")
-    parser.add_argument("--guidance_scale", type=float, default=0.2, help="Guidance scale for image generation.")
-    #parser.add_argument("--decay_rate", type=float, default=0.8 ) #TODO FIX
+    parser.add_argument("--guidance_scale", type=float, default=0, help="Guidance scale for image generation.")
+    parser.add_argument("--decay_rate", type=float, default=0.8 )
+    parser.add_argument("--boost_factor", type=float, default=1.75 )
+    parser.add_argument("--boost_threshold", type=float, default=0.4 )
 
     args = parser.parse_args()
 
@@ -62,4 +68,7 @@ if __name__ == "__main__":
          base_prompt=args.base_prompt, 
          target_prompts=args.target_prompts, 
          alpha=args.alpha, 
-         guidance_scale=args.guidance_scale)
+         guidance_scale=args.guidance_scale,
+         decay_rate = args.decay_rate,
+         boost_factor = args.boost_factor,
+         boost_threshold = args.boost_threshold)

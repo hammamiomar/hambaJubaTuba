@@ -51,7 +51,9 @@ class NoiseVisualizer:
         #normalize mean power between 0-1
         self.specm = (specm-np.min(specm))/np.ptp(specm)
         
-        self.chroma = librosa.feature.chroma_cqt(y=y, sr=sr, hop_length=self.hop_length)
+        y_harmonic, y_percussive = librosa.effects.hpss(y)
+        
+        self.chroma = librosa.feature.chroma_cqt(y=y_harmonic, sr=sr, hop_length=self.hop_length)
         
         self.chromaGrad = np.gradient(self.chroma)
         
@@ -61,32 +63,7 @@ class NoiseVisualizer:
         latents = noiseCircle[specmScaled]
         latents = latents.squeeze(1)
         return latents
-    
-    # def getSpecCircleLatents(self, distance=2, alpha=0.5):
-    #     # Initialize the latent noise circle
-    #     noiseCircle = LatentInitCircular(steps=self.specm.shape[0], distance=distance)
-        
-    #     # Scale the mean power values
-    #     specmScaled = (self.specm * (self.specm.shape[0] - 1)).astype('int32')  # rescaling
 
-    #     # Initialize the array to hold the adjusted latents
-    #     latents = []
-
-    #     # Iterate over each time point to calculate the eased latent
-    #     for i in range(len(self.specm)):
-    #         if i == 0:
-    #             # No easing needed for the first frame
-    #             latents.append(noiseCircle[specmScaled[i]])
-    #         else:
-    #             # Calculate the easing factor based on the gradient
-    #             easing_factor = 1 / (1 + alpha * abs(self.gradm[i]))
-    #             eased_latent = easing_factor * noiseCircle[specmScaled[i]] + (1 - easing_factor) * latents[-1]
-    #             latents.append(eased_latent)
-        
-    #     # Convert the list to a numpy array and squeeze the unnecessary dimension
-    #     latents = torch.stack(latents).squeeze(1)
-    #     return latents
-    
     def getFPS(self):
         return self.sr / self.hop_length 
     
@@ -149,51 +126,7 @@ class NoiseVisualizer:
         
         return out
 
-    # def getPromptEmbeds(self, basePrompt, targetPromptChromaScale, method="linear", alpha=0.5):
-    #     #example: basePrompt= "Demon Dancing, demon dancing cheerfully, blue background, jazzy, bells, creepy and morose, hardcore graphics"
-    #     # targetPromptChromaScale = ["Black", "Dark Blue", "Purple", "Magenta", "Red", "Orange", "Yellow", "Sea green", "Green", "Teal", "Light Blue", "White"]
-        
-    #     chroma = self.chroma.T #shape-> n,12
-    #     chromaW = chroma / np.sum(chroma, axis=1, keepdims=True)
-    #     chromaW = torch.from_numpy(chromaW)
-    #     chromaW = chromaW.view(-1, 12, 1, 1) # chroma weighted, all adding to 1 for every slice. 
-        
-    #     alphas = np.full(chroma.shape,alpha)
-    #     chroma = chroma * alphas # defines maximum value the chroma can take on, depending on alpha
-    #     numFrames = chroma.shape[0]
-        
-    #     baseInput = self.tokenizer(basePrompt, return_tensors="pt", padding="max_length", truncation = True, max_length = 16).input_ids
-    #     targetInput = self.tokenizer(targetPromptChromaScale, return_tensors="pt", padding="max_length", truncation = True, max_length = 16).input_ids
-        
-    #     baseEmbeds = self.textEncoder(baseInput)[0] # shape-> 1,3,768
-    #     targetEmbeds = self.textEncoder(targetInput)[0] #shape-> 12,3,768
-        
-    #     #baseEmbeds = baseEmbeds.unsqueeze(0).expand(numFrames, -1, -1 , -1) #shape -> n, 1, 3, 768
-    #     targetEmbeds = targetEmbeds.unsqueeze(0).expand(numFrames, -1, -1, -1) #shape -> n, 12, 3, 768
-        
-    #     interpolatedEmbedsAll = []
-    #     for frameNum in range(numFrames): # add all with chroma mag
-    #         interpolatedEmbed = baseEmbeds.clone() # shape 1,16,768
-    #         interpolatedEmbed = interpolatedEmbed.squeeze(0)
-    #         interpolatedEmbedsWeighted=[]
-    #         for chromaKey in range(12):
-    #             if method == "linear":
-    #                 interpolatedEmbedUnweighted = (1 - chroma[frameNum,chromaKey]) * interpolatedEmbed + \
-    #                 chroma[frameNum,chromaKey] * targetEmbeds[frameNum,chromaKey]
-    #             elif method =="slerp":
-    #                 interpolatedEmbedUnweighted = self.slerp(interpolatedEmbed,targetEmbeds[frameNum, chromaKey], chroma[frameNum,chromaKey]) #TODO CHECK CHROMAW WITN ALPHA
-                
-    #             interpolatedEmbedsWeighted.append(interpolatedEmbedUnweighted)
-            
-    #         interpolatedEmbedsWeighted = torch.stack(interpolatedEmbedsWeighted).squeeze(1)
-            
-    #         interpolatedEmbed = torch.sum(interpolatedEmbedsWeighted * chromaW[frameNum], dim=0).unsqueeze(0)
-                
-    #         interpolatedEmbedsAll.append(interpolatedEmbed)
-            
-    #     interpolatedEmbeds = torch.stack(interpolatedEmbedsAll)
-        
-    #     return interpolatedEmbeds
+
     
     def getPromptEmbeds(self, basePrompt, targetPromptChromaScale, method="linear", alpha=0.5, decay_rate=0.7, boost_factor=2.5, boost_threshold=0.5):
         chroma = self.chroma.T  # shape-> n,12
@@ -232,8 +165,8 @@ class NoiseVisualizer:
         alphas = np.full(chroma.shape, alpha)
         chroma = chroma * alphas  # defines maximum value the chroma can take on, depending on alpha
         
-        baseInput = self.tokenizer(basePrompt, return_tensors="pt", padding="max_length", truncation=True, max_length=16).input_ids
-        targetInput = self.tokenizer(targetPromptChromaScale, return_tensors="pt", padding="max_length", truncation=True, max_length=16).input_ids
+        baseInput = self.tokenizer(basePrompt, return_tensors="pt", padding="max_length", truncation=True, max_length=77).input_ids
+        targetInput = self.tokenizer(targetPromptChromaScale, return_tensors="pt", padding="max_length", truncation=True, max_length=77).input_ids
         
         baseEmbeds = self.textEncoder(baseInput)[0]  # shape-> 1,3,768
         targetEmbeds = self.textEncoder(targetInput)[0]  # shape-> 12,3,768
@@ -266,7 +199,7 @@ class NoiseVisualizer:
         
         
       
-    def getVisuals(self, latents, promptEmbeds, num_inference_steps=1,guidance_scale = 0.3, batch_size=1):
+    def getVisuals(self, latents, promptEmbeds, num_inference_steps=1,guidance_scale = 0, batch_size=1):
         #self.pipe.vae = self.vae
         self.pipe.to(device=self.device, dtype=self.weightType)
         
@@ -286,9 +219,4 @@ class NoiseVisualizer:
             allFrames.extend(frames)
         return allFrames
         
-        # frame = self.pipe(prompt=prompt,
-        #                       guidance_scale=0.0,
-        #                       num_inference_steps=1,
-        #                       output_type="pil").images[0]
-        # return frame
         

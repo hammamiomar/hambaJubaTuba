@@ -7,5 +7,60 @@
 
 python main.py --song "songs/earl.mp3" --output "outputs/earl3.mp4" --alpha 0.8 --distance 0.25 --seed 42069
 
-python main.py --song "songs/earl.mp3" --output "outputs/earl4.mp4" --alpha 0.8 --distance 0.25 --seed 42069
-boost=2.5, decay 0.7, boost thresh 0.5
+python main.py --song "songs/sparky.mp3" --output "outputs/sparky.mp4" --alpha 0.8 --distance 0.25 --seed 42069
+--base prompt "Turtle humanoid dancing with cigarette, cute"
+--target_prompts "dog dancing" "salsa dancing" "hip hop dancing" "techno dancing" "robot dancing" "jazz dancing" "ballet dancing" "tango dancing" "flamenco dancing" "samba dancing" "break dancing" "belly dancing" 
+--decay_rate 0.85
+--boost_factor 1.75
+--boost_threshold 0.4
+
+python main.py --song "songs/sparky.mp3" --output "outputs/sparky2.mp4" --alpha 0.8 --distance 0.25 --seed 42069 --base_prompt "Turtle humanoid dancing with cigarette, cute" --target_prompts "dog dancing" "salsa dancing" "hip hop dancing" "techno dancing" "robot dancing" "jazz dancing" "ballet dancing" "tango dancing" "flamenco dancing" "samba dancing" "break dancing" "belly dancing" --decay_rate 0.85 --boost_factor 1.75 --boost_threshold 0.4
+
+python main.py --song "songs/sparky.mp3" --output "outputs/sparky2.mp4" --alpha 1.0 --distance 0.35 --seed 420692234 --base_prompt "Turtle humanoid dancing with cigarette, cute" --target_prompts "dog dancing" "salsa dancing" "hip hop dancing" "techno dancing" "robot dancing" "jazz dancing" "ballet dancing" "tango dancing" "flamenco dancing" "samba dancing" "break dancing" "belly dancing" --decay_rate 0.6 --boost_factor 1.75 --boost_threshold 0.3
+
+python main.py --song "songs/icy.mp3" --output "outputs/icy.mp4" --alpha 1.0 --distance 0.35 --seed 315342 --base_prompt "Turtle humanoid dancing with cigarette, cute" --target_prompts "dog dancing" "salsa dancing" "hip hop dancing" "techno dancing" "robot dancing" "jazz dancing" "ballet dancing" "tango dancing" "flamenco dancing" "samba dancing" "break dancing" "belly dancing" --decay_rate 0.6 --boost_factor 1.75 --boost_threshold 0.3
+
+python main.py --song "songs/chamakay.mp3" --output "outputs/chamakay.mp4" --alpha 1.0 --distance 0.5 --seed 420000583 --base_prompt "A quirky turtle humanoid, adorned with a vintage hat, dancing smoothly with a lit cigarette in its beak, under glowing neon signs in a retro-futuristic cityscape. The turtle’s movements are cute and comical, swaying gently with the rhythm of the music." \
+--target_prompts "A scruffy but lovable dog, wearing a bandana, dancing awkwardly in the middle of a busy street at sunset. Cars swerve around as it clumsily spins, its tail wagging furiously to the beat, oblivious to the chaos around it." \
+"A lively salsa dancer with fiery red clothing, spinning passionately in a tropical nightclub filled with vibrant colors and pulsing lights. Their movements are sharp, rhythmic, and full of flair as they weave between the swirling lights and onlookers." \
+"A street-savvy hip hop dancer, with a leather jacket and sneakers, busting out fluid, gravity-defying moves on the graffiti-covered streets of an urban jungle. Streetlights flicker as the dancer moves in perfect sync with booming bass and distant sirens." \
+"A futuristic, metallic robot with sleek chrome limbs, dancing in a sterile, high-tech nightclub where laser beams cut through the air. Its moves are mechanical yet mesmerizing, with each precise step creating sparks that dance along with the techno beats." \
+"A smooth jazz dancer, dressed in a sharp, pinstripe suit and fedora, twirling effortlessly under the warm, amber glow of a 1940s jazz club. The atmosphere is smoky, and a live jazz band plays softly in the background as the dancer glides across the floor." \
+"A graceful ballet dancer, dressed in a soft pastel tutu, twirling delicately in a vast, ethereal meadow covered in mist. The sun rises slowly, casting a gentle golden light on the serene dancer as they move with elegance and precision." \
+"A passionate tango dancer, silhouetted in a dimly lit room, with long, flowing garments that swirl dramatically with every sharp movement. The air is thick with tension, as the dancer's sharp, deliberate steps echo through the otherwise silent room." \
+"A fiery flamenco dancer, their heels pounding against the wooden stage with rhythmic intensity, as their hands clap sharply and a red shawl swirls around them. They're surrounded by a lively audience and the raw sound of guitar strumming and castanets." \
+"A joyful samba dancer, in a bright feathered costume, moving energetically through a bustling street carnival. Confetti fills the air as crowds cheer and colorful floats pass by, the dancer's every move a celebration of life and rhythm." \
+"A breakdancer in an underground club, spinning and flipping in a chaotic but controlled fashion on a cracked concrete floor. The walls are lined with glowing neon graffiti, and the crowd forms a circle around the dancer, cheering wildly." \
+"A graceful belly dancer with flowing, jeweled fabrics, moving hypnotically under a canopy of stars in a desert oasis. The scene is lit by soft lantern light, with palm trees swaying gently and the distant sound of a sitar filling the warm air." \
+"A funky, futuristic techno dancer in a glowing neon suit, moving in robotic precision amidst flashing holograms and floating geometric shapes, set against the backdrop of a neon-lit city skyline." \
+--decay_rate 0.8 --boost_factor 3.0 --boost_threshold 0.3 --guidance_scale 0
+
+python main.py --song "songs/promisus.mp3" --output "outputs/promisus.mp4" --alpha 0.5 --distance 0.36 --seed 31412 --base_prompt "A quirky turtle humanoid, adorned with a vintage hat, dancing smoothly with a lit cigarette in its beak, under glowing neon signs in a retro-futuristic cityscape. The turtle’s movements are cute and comical, swaying gently with the rhythm of the music." \
+--target_prompts "A scruffy but lovable dog, wearing a bandana, dancing awkwardly in the middle of a busy street at sunset. Cars swerve around as it clumsily spins, its tail wagging furiously to the beat, oblivious to the chaos around it." \
+"A lively salsa dancer with fiery red clothing, spinning passionately in a tropical nightclub filled with vibrant colors and pulsing lights. Their movements are sharp, rhythmic, and full of flair as they weave between the swirling lights and onlookers." \
+"A street-savvy hip hop dancer, with a leather jacket and sneakers, busting out fluid, gravity-defying moves on the graffiti-covered streets of an urban jungle. Streetlights flicker as the dancer moves in perfect sync with booming bass and distant sirens." \
+"A futuristic, metallic robot with sleek chrome limbs, dancing in a sterile, high-tech nightclub where laser beams cut through the air. Its moves are mechanical yet mesmerizing, with each precise step creating sparks that dance along with the techno beats." \
+"A smooth jazz dancer, dressed in a sharp, pinstripe suit and fedora, twirling effortlessly under the warm, amber glow of a 1940s jazz club. The atmosphere is smoky, and a live jazz band plays softly in the background as the dancer glides across the floor." \
+"A graceful ballet dancer, dressed in a soft pastel tutu, twirling delicately in a vast, ethereal meadow covered in mist. The sun rises slowly, casting a gentle golden light on the serene dancer as they move with elegance and precision." \
+"A passionate tango dancer, silhouetted in a dimly lit room, with long, flowing garments that swirl dramatically with every sharp movement. The air is thick with tension, as the dancer's sharp, deliberate steps echo through the otherwise silent room." \
+"A fiery flamenco dancer, their heels pounding against the wooden stage with rhythmic intensity, as their hands clap sharply and a red shawl swirls around them. They're surrounded by a lively audience and the raw sound of guitar strumming and castanets." \
+"A joyful samba dancer, in a bright feathered costume, moving energetically through a bustling street carnival. Confetti fills the air as crowds cheer and colorful floats pass by, the dancer's every move a celebration of life and rhythm." \
+"A breakdancer in an underground club, spinning and flipping in a chaotic but controlled fashion on a cracked concrete floor. The walls are lined with glowing neon graffiti, and the crowd forms a circle around the dancer, cheering wildly." \
+"A graceful belly dancer with flowing, jeweled fabrics, moving hypnotically under a canopy of stars in a desert oasis. The scene is lit by soft lantern light, with palm trees swaying gently and the distant sound of a sitar filling the warm air." \
+"A funky, futuristic techno dancer in a glowing neon suit, moving in robotic precision amidst flashing holograms and floating geometric shapes, set against the backdrop of a neon-lit city skyline." \
+--decay_rate 0.9 --boost_factor 2.0 --boost_threshold 0.3 --guidance_scale 0
+
+python main.py --song "songs/promisus.mp3" --output "outputs/promisus2.mp4" --alpha 0.9 --distance 0.30 --seed 31451643 --base_prompt "A quirky turtle humanoid, adorned with a vintage hat, dancing smoothly with a lit cigarette in its beak, under glowing neon signs in a retro-futuristic cityscape. The turtle’s movements are cute and comical, swaying gently with the rhythm of the music." \
+--target_prompts "A scruffy but lovable dog, wearing a bandana, dancing awkwardly in the middle of a busy street at sunset. Cars swerve around as it clumsily spins, its tail wagging furiously to the beat, oblivious to the chaos around it." \
+"A lively salsa dancer with fiery red clothing, spinning passionately in a tropical nightclub filled with vibrant colors and pulsing lights. Their movements are sharp, rhythmic, and full of flair as they weave between the swirling lights and onlookers." \
+"A street-savvy hip hop dancer, with a leather jacket and sneakers, busting out fluid, gravity-defying moves on the graffiti-covered streets of an urban jungle. Streetlights flicker as the dancer moves in perfect sync with booming bass and distant sirens." \
+"A futuristic, metallic robot with sleek chrome limbs, dancing in a sterile, high-tech nightclub where laser beams cut through the air. Its moves are mechanical yet mesmerizing, with each precise step creating sparks that dance along with the techno beats." \
+"A smooth jazz dancer, dressed in a sharp, pinstripe suit and fedora, twirling effortlessly under the warm, amber glow of a 1940s jazz club. The atmosphere is smoky, and a live jazz band plays softly in the background as the dancer glides across the floor." \
+"A graceful ballet dancer, dressed in a soft pastel tutu, twirling delicately in a vast, ethereal meadow covered in mist. The sun rises slowly, casting a gentle golden light on the serene dancer as they move with elegance and precision." \
+"A passionate tango dancer, silhouetted in a dimly lit room, with long, flowing garments that swirl dramatically with every sharp movement. The air is thick with tension, as the dancer's sharp, deliberate steps echo through the otherwise silent room." \
+"A fiery flamenco dancer, their heels pounding against the wooden stage with rhythmic intensity, as their hands clap sharply and a red shawl swirls around them. They're surrounded by a lively audience and the raw sound of guitar strumming and castanets." \
+"A joyful samba dancer, in a bright feathered costume, moving energetically through a bustling street carnival. Confetti fills the air as crowds cheer and colorful floats pass by, the dancer's every move a celebration of life and rhythm." \
+"A breakdancer in an underground club, spinning and flipping in a chaotic but controlled fashion on a cracked concrete floor. The walls are lined with glowing neon graffiti, and the crowd forms a circle around the dancer, cheering wildly." \
+"A graceful belly dancer with flowing, jeweled fabrics, moving hypnotically under a canopy of stars in a desert oasis. The scene is lit by soft lantern light, with palm trees swaying gently and the distant sound of a sitar filling the warm air." \
+"A funky, futuristic techno dancer in a glowing neon suit, moving in robotic precision amidst flashing holograms and floating geometric shapes, set against the backdrop of a neon-lit city skyline." \
+--decay_rate 0.9 --boost_factor 2.0 --boost_threshold 0.3 --guidance_scale 0
