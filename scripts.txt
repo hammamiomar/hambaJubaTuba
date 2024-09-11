@@ -50,7 +50,7 @@ python main.py --song "songs/promisus.mp3" --output "outputs/promisus.mp4" --alp
 "A funky, futuristic techno dancer in a glowing neon suit, moving in robotic precision amidst flashing holograms and floating geometric shapes, set against the backdrop of a neon-lit city skyline." \
 --decay_rate 0.9 --boost_factor 2.0 --boost_threshold 0.3 --guidance_scale 0
 
-python main.py --song "songs/promisus.mp3" --output "outputs/promisus2.mp4" --alpha 0.9 --distance 0.30 --seed 31451643 --base_prompt "A quirky turtle humanoid, adorned with a vintage hat, dancing smoothly with a lit cigarette in its beak, under glowing neon signs in a retro-futuristic cityscape. The turtle’s movements are cute and comical, swaying gently with the rhythm of the music." \
+python main.py --song "songs/promisus.mp3" --output "outputs/promisus2beat.mp4" --alpha 0.9 --distance 0.25 --seed 31451643 --base_prompt "A quirky turtle humanoid, adorned with a vintage hat, dancing smoothly with a lit cigarette in its beak, under glowing neon signs in a retro-futuristic cityscape. The turtle’s movements are cute and comical, swaying gently with the rhythm of the music." \
 --target_prompts "A scruffy but lovable dog, wearing a bandana, dancing awkwardly in the middle of a busy street at sunset. Cars swerve around as it clumsily spins, its tail wagging furiously to the beat, oblivious to the chaos around it." \
 "A lively salsa dancer with fiery red clothing, spinning passionately in a tropical nightclub filled with vibrant colors and pulsing lights. Their movements are sharp, rhythmic, and full of flair as they weave between the swirling lights and onlookers." \
 "A street-savvy hip hop dancer, with a leather jacket and sneakers, busting out fluid, gravity-defying moves on the graffiti-covered streets of an urban jungle. Streetlights flicker as the dancer moves in perfect sync with booming bass and distant sirens." \
@@ -64,3 +64,99 @@ python main.py --song "songs/promisus.mp3" --output "outputs/promisus2.mp4" --al
 "A graceful belly dancer with flowing, jeweled fabrics, moving hypnotically under a canopy of stars in a desert oasis. The scene is lit by soft lantern light, with palm trees swaying gently and the distant sound of a sitar filling the warm air." \
 "A funky, futuristic techno dancer in a glowing neon suit, moving in robotic precision amidst flashing holograms and floating geometric shapes, set against the backdrop of a neon-lit city skyline." \
 --decay_rate 0.9 --boost_factor 2.0 --boost_threshold 0.3 --guidance_scale 0
+
+python main.py --song "songs/italo.mp3" --output "outputs/italo.mp4" --alpha 0.9 --distance 0.05 --seed 31451643 --base_prompt "A quirky turtle humanoid, adorned with a vintage hat, dancing smoothly with a lit cigarette in its beak, under glowing neon signs in a retro-futuristic cityscape. The turtle’s movements are cute and comical, swaying gently with the rhythm of the music." \
+--target_prompts "A scruffy but lovable dog, wearing a bandana, dancing awkwardly in the middle of a busy street at sunset. Cars swerve around as it clumsily spins, its tail wagging furiously to the beat, oblivious to the chaos around it." \
+"A lively salsa dancer with fiery red clothing, spinning passionately in a tropical nightclub filled with vibrant colors and pulsing lights. Their movements are sharp, rhythmic, and full of flair as they weave between the swirling lights and onlookers." \
+"A street-savvy hip hop dancer, with a leather jacket and sneakers, busting out fluid, gravity-defying moves on the graffiti-covered streets of an urban jungle. Streetlights flicker as the dancer moves in perfect sync with booming bass and distant sirens." \
+"A futuristic, metallic robot with sleek chrome limbs, dancing in a sterile, high-tech nightclub where laser beams cut through the air. Its moves are mechanical yet mesmerizing, with each precise step creating sparks that dance along with the techno beats." \
+"A smooth jazz dancer, dressed in a sharp, pinstripe suit and fedora, twirling effortlessly under the warm, amber glow of a 1940s jazz club. The atmosphere is smoky, and a live jazz band plays softly in the background as the dancer glides across the floor." \
+"A graceful ballet dancer, dressed in a soft pastel tutu, twirling delicately in a vast, ethereal meadow covered in mist. The sun rises slowly, casting a gentle golden light on the serene dancer as they move with elegance and precision." \
+"A passionate tango dancer, silhouetted in a dimly lit room, with long, flowing garments that swirl dramatically with every sharp movement. The air is thick with tension, as the dancer's sharp, deliberate steps echo through the otherwise silent room." \
+"A fiery flamenco dancer, their heels pounding against the wooden stage with rhythmic intensity, as their hands clap sharply and a red shawl swirls around them. They're surrounded by a lively audience and the raw sound of guitar strumming and castanets." \
+"A joyful samba dancer, in a bright feathered costume, moving energetically through a bustling street carnival. Confetti fills the air as crowds cheer and colorful floats pass by, the dancer's every move a celebration of life and rhythm." \
+"A breakdancer in an underground club, spinning and flipping in a chaotic but controlled fashion on a cracked concrete floor. The walls are lined with glowing neon graffiti, and the crowd forms a circle around the dancer, cheering wildly." \
+"A graceful belly dancer with flowing, jeweled fabrics, moving hypnotically under a canopy of stars in a desert oasis. The scene is lit by soft lantern light, with palm trees swaying gently and the distant sound of a sitar filling the warm air." \
+"A funky, futuristic techno dancer in a glowing neon suit, moving in robotic precision amidst flashing holograms and floating geometric shapes, set against the backdrop of a neon-lit city skyline." \
+--decay_rate 0.9 --boost_factor 2.0 --boost_threshold 0.3 --guidance_scale 0 --hop_length 377
+
+python main.py --song "songs/sparky.mp3" --output "outputs/sparkyNew.mp4" --alpha 0.9 --distance 0.05 --seed 80085 --base_prompt "A quirky turtle humanoid, adorned with a vintage hat, dancing smoothly with a lit cigarette in its beak, under glowing neon signs in a retro-futuristic cityscape. The turtle’s movements are cute and comical, swaying gently with the rhythm of the music." \
+--target_prompts "A scruffy but lovable dog, wearing a bandana, dancing awkwardly in the middle of a busy street at sunset. Cars swerve around as it clumsily spins, its tail wagging furiously to the beat, oblivious to the chaos around it." \
+"A lively salsa dancer with fiery red clothing, spinning passionately in a tropical nightclub filled with vibrant colors and pulsing lights. Their movements are sharp, rhythmic, and full of flair as they weave between the swirling lights and onlookers." \
+"A street-savvy hip hop dancer, with a leather jacket and sneakers, busting out fluid, gravity-defying moves on the graffiti-covered streets of an urban jungle. Streetlights flicker as the dancer moves in perfect sync with booming bass and distant sirens." \
+"A futuristic, metallic robot with sleek chrome limbs, dancing in a sterile, high-tech nightclub where laser beams cut through the air. Its moves are mechanical yet mesmerizing, with each precise step creating sparks that dance along with the techno beats." \
+"A smooth jazz dancer, dressed in a sharp, pinstripe suit and fedora, twirling effortlessly under the warm, amber glow of a 1940s jazz club. The atmosphere is smoky, and a live jazz band plays softly in the background as the dancer glides across the floor." \
+"A graceful ballet dancer, dressed in a soft pastel tutu, twirling delicately in a vast, ethereal meadow covered in mist. The sun rises slowly, casting a gentle golden light on the serene dancer as they move with elegance and precision." \
+"A passionate tango dancer, silhouetted in a dimly lit room, with long, flowing garments that swirl dramatically with every sharp movement. The air is thick with tension, as the dancer's sharp, deliberate steps echo through the otherwise silent room." \
+"A fiery flamenco dancer, their heels pounding against the wooden stage with rhythmic intensity, as their hands clap sharply and a red shawl swirls around them. They're surrounded by a lively audience and the raw sound of guitar strumming and castanets." \
+"A joyful samba dancer, in a bright feathered costume, moving energetically through a bustling street carnival. Confetti fills the air as crowds cheer and colorful floats pass by, the dancer's every move a celebration of life and rhythm." \
+"A breakdancer in an underground club, spinning and flipping in a chaotic but controlled fashion on a cracked concrete floor. The walls are lined with glowing neon graffiti, and the crowd forms a circle around the dancer, cheering wildly." \
+"A graceful belly dancer with flowing, jeweled fabrics, moving hypnotically under a canopy of stars in a desert oasis. The scene is lit by soft lantern light, with palm trees swaying gently and the distant sound of a sitar filling the warm air." \
+"A funky, futuristic techno dancer in a glowing neon suit, moving in robotic precision amidst flashing holograms and floating geometric shapes, set against the backdrop of a neon-lit city skyline." \
+--decay_rate 0.9 --boost_factor 2.0 --boost_threshold 0.3 --guidance_scale 0 --hop_length 377
+
+python main.py --song "songs/xtasisCarnal.mp3" --output "outputs/xtasisCarnalNew.mp4" --alpha 0.5 --distance 0.1 --seed 80085 \
+--decay_rate 0.9 --boost_factor 3.0 --boost_threshold 0.5 --guidance_scale 0 --hop_length 377 \
+--base_prompt "A terrifying demon, grotesque and menacing, dancing wildly in a hellish landscape of flames and shadows, its eyes glowing with a sinister red light." \
+--target_prompts "A monstrous wolf, fur matted and eyes glowing yellow, dancing with primal fury under a blood-red moon, its claws slashing the air as it moves." \
+"A skeletal crow, its bones rattling as it performs an eerie dance on a crumbling stone ledge, its hollow eyes glowing with an otherworldly blue flame." \
+"A hulking, demonic bear, its fur singed and smoke rising from its massive frame, performing a slow, menacing dance in a scorched forest, each step shaking the ground." \
+"A vicious serpent with glowing red scales, coiling and twisting in a hypnotic, evil dance around a towering obsidian pillar, its eyes gleaming with malice." \
+"A demonic cat with sharp fangs and glowing green eyes, moving gracefully but dangerously in the shadows, its tail flicking like a whip as it dances across a haunted graveyard." \
+"A menacing bat, with glowing red eyes and leathery wings, swooping and spinning in an evil dance through the pitch-black sky, shrieking with every sharp movement." \
+"A giant spider with blood-red eyes, performing a nightmarish dance on a web strung between ancient, dead trees, its legs moving with unnerving precision." \
+"A fiendish goat, its horns twisted and eyes burning like embers, prancing and kicking wildly on a rocky cliffside, surrounded by swirling black mist." \
+"A grotesque vulture, feathers torn and eyes glowing a sickly yellow, circling and diving in an evil dance over a desolate battlefield filled with bones." \
+"A demonic hyena with matted fur and glowing orange eyes, laughing maniacally as it dances erratically around a circle of flickering, hellish flames." \
+"A twisted ram, its fur ablaze with hellfire, stomping and twirling in a frenzied dance on a craggy mountainside, as volcanic ash fills the air around it." \
+"A snarling jackal with glowing red eyes, bounding and spinning in a chaotic, frenzied dance across a moonlit desert, leaving scorched footprints in the sand."
+
+
+python main.py --song "songs/xtasisCarnal.mp3" --output "outputs/xtasisCarnalNewdeca2y.mp4" --alpha 1.0 --distance 0.1 --seed 80085 \
+--decay_rate 0.5 --boost_factor 4.0 --boost_threshold 0.25 --guidance_scale 0 --hop_length 377 \
+--base_prompt "A terrifying demon, grotesque and menacing, dancing wildly in a hellish landscape of flames and shadows, its eyes glowing with a sinister red light." \
+--target_prompts "A monstrous wolf, fur matted and eyes glowing yellow, dancing with primal fury under a blood-red moon, its claws slashing the air as it moves." \
+"A skeletal crow, its bones rattling as it performs an eerie dance on a crumbling stone ledge, its hollow eyes glowing with an otherworldly blue flame." \
+"A hulking, demonic bear, its fur singed and smoke rising from its massive frame, performing a slow, menacing dance in a scorched forest, each step shaking the ground." \
+"A vicious serpent with glowing red scales, coiling and twisting in a hypnotic, evil dance around a towering obsidian pillar, its eyes gleaming with malice." \
+"A demonic cat with sharp fangs and glowing green eyes, moving gracefully but dangerously in the shadows, its tail flicking like a whip as it dances across a haunted graveyard." \
+"A menacing bat, with glowing red eyes and leathery wings, swooping and spinning in an evil dance through the pitch-black sky, shrieking with every sharp movement." \
+"A giant spider with blood-red eyes, performing a nightmarish dance on a web strung between ancient, dead trees, its legs moving with unnerving precision." \
+"A fiendish goat, its horns twisted and eyes burning like embers, prancing and kicking wildly on a rocky cliffside, surrounded by swirling black mist." \
+"A grotesque vulture, feathers torn and eyes glowing a sickly yellow, circling and diving in an evil dance over a desolate battlefield filled with bones." \
+"A demonic hyena with matted fur and glowing orange eyes, laughing maniacally as it dances erratically around a circle of flickering, hellish flames." \
+"A twisted ram, its fur ablaze with hellfire, stomping and twirling in a frenzied dance on a craggy mountainside, as volcanic ash fills the air around it." \
+"A snarling jackal with glowing red eyes, bounding and spinning in a chaotic, frenzied dance across a moonlit desert, leaving scorched footprints in the sand."
+
+
+python main.py --song "songs/snippets/xtasisSnippet.mp3" --output "outputs/xtasisSnippetStdPerc.mp4" --alpha 1.0 --distance 0.1 --seed 80085 \
+--decay_rate 0.5 --boost_factor 4.0 --boost_threshold 0.25 --guidance_scale 0 --hop_length 377 \
+--base_prompt "A terrifying demon, grotesque and menacing, dancing wildly in a hellish landscape of flames and shadows, its eyes glowing with a sinister red light." \
+--target_prompts "A monstrous wolf, fur matted and eyes glowing yellow, dancing with primal fury under a blood-red moon, its claws slashing the air as it moves." \
+"A skeletal crow, its bones rattling as it performs an eerie dance on a crumbling stone ledge, its hollow eyes glowing with an otherworldly blue flame." \
+"A hulking, demonic bear, its fur singed and smoke rising from its massive frame, performing a slow, menacing dance in a scorched forest, each step shaking the ground." \
+"A vicious serpent with glowing red scales, coiling and twisting in a hypnotic, evil dance around a towering obsidian pillar, its eyes gleaming with malice." \
+"A demonic cat with sharp fangs and glowing green eyes, moving gracefully but dangerously in the shadows, its tail flicking like a whip as it dances across a haunted graveyard." \
+"A menacing bat, with glowing red eyes and leathery wings, swooping and spinning in an evil dance through the pitch-black sky, shrieking with every sharp movement." \
+"A giant spider with blood-red eyes, performing a nightmarish dance on a web strung between ancient, dead trees, its legs moving with unnerving precision." \
+"A fiendish goat, its horns twisted and eyes burning like embers, prancing and kicking wildly on a rocky cliffside, surrounded by swirling black mist." \
+"A grotesque vulture, feathers torn and eyes glowing a sickly yellow, circling and diving in an evil dance over a desolate battlefield filled with bones." \
+"A demonic hyena with matted fur and glowing orange eyes, laughing maniacally as it dances erratically around a circle of flickering, hellish flames." \
+"A twisted ram, its fur ablaze with hellfire, stomping and twirling in a frenzied dance on a craggy mountainside, as volcanic ash fills the air around it." \
+"A snarling jackal with glowing red eyes, bounding and spinning in a chaotic, frenzied dance across a moonlit desert, leaving scorched footprints in the sand."
+
+
+python main.py --song "songs/snippets/fishmansSnip.mp3" --output "outputs/fishmanSnip.mp4" --alpha 0.9 --distance 0.05 --seed 80085 --base_prompt "A quirky turtle humanoid, adorned with a vintage hat, dancing smoothly with a lit cigarette in its beak, under glowing neon signs in a retro-futuristic cityscape. The turtle’s movements are cute and comical, swaying gently with the rhythm of the music." \
+--target_prompts "A scruffy but lovable dog, wearing a bandana, dancing awkwardly in the middle of a busy street at sunset. Cars swerve around as it clumsily spins, its tail wagging furiously to the beat, oblivious to the chaos around it." \
+"A lively salsa dancer with fiery red clothing, spinning passionately in a tropical nightclub filled with vibrant colors and pulsing lights. Their movements are sharp, rhythmic, and full of flair as they weave between the swirling lights and onlookers." \
+"A street-savvy hip hop dancer, with a leather jacket and sneakers, busting out fluid, gravity-defying moves on the graffiti-covered streets of an urban jungle. Streetlights flicker as the dancer moves in perfect sync with booming bass and distant sirens." \
+"A futuristic, metallic robot with sleek chrome limbs, dancing in a sterile, high-tech nightclub where laser beams cut through the air. Its moves are mechanical yet mesmerizing, with each precise step creating sparks that dance along with the techno beats." \
+"A smooth jazz dancer, dressed in a sharp, pinstripe suit and fedora, twirling effortlessly under the warm, amber glow of a 1940s jazz club. The atmosphere is smoky, and a live jazz band plays softly in the background as the dancer glides across the floor." \
+"A graceful ballet dancer, dressed in a soft pastel tutu, twirling delicately in a vast, ethereal meadow covered in mist. The sun rises slowly, casting a gentle golden light on the serene dancer as they move with elegance and precision." \
+"A passionate tango dancer, silhouetted in a dimly lit room, with long, flowing garments that swirl dramatically with every sharp movement. The air is thick with tension, as the dancer's sharp, deliberate steps echo through the otherwise silent room." \
+"A fiery flamenco dancer, their heels pounding against the wooden stage with rhythmic intensity, as their hands clap sharply and a red shawl swirls around them. They're surrounded by a lively audience and the raw sound of guitar strumming and castanets." \
+"A joyful samba dancer, in a bright feathered costume, moving energetically through a bustling street carnival. Confetti fills the air as crowds cheer and colorful floats pass by, the dancer's every move a celebration of life and rhythm." \
+"A breakdancer in an underground club, spinning and flipping in a chaotic but controlled fashion on a cracked concrete floor. The walls are lined with glowing neon graffiti, and the crowd forms a circle around the dancer, cheering wildly." \
+"A graceful belly dancer with flowing, jeweled fabrics, moving hypnotically under a canopy of stars in a desert oasis. The scene is lit by soft lantern light, with palm trees swaying gently and the distant sound of a sitar filling the warm air." \
+"A funky, futuristic techno dancer in a glowing neon suit, moving in robotic precision amidst flashing holograms and floating geometric shapes, set against the backdrop of a neon-lit city skyline." \
+--decay_rate 0.9 --boost_factor 2.0 --boost_threshold 0.3 --guidance_scale 0 --hop_length 377 --note_type "whole"

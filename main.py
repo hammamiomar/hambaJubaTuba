@@ -3,16 +3,26 @@ import os
 from imagegen import NoiseVisualizer
 from utils import create_mp4_from_pil_images
 import torch
+import time
 
-def main(song, output_path, seed, hop_length, distance, base_prompt, target_prompts, alpha, guidance_scale, decay_rate, boost_factor, boost_threshold):
+def main(song, output_path, seed, hop_length, distance, base_prompt, target_prompts, alpha, 
+         guidance_scale, decay_rate, boost_factor, noteType, boost_threshold):
     device = "mps" if torch.backends.mps.is_available() else "cpu"
     visualizer = NoiseVisualizer(device=device, seed=seed)
 
+    start_time = time.time()  # Start total timing
     visualizer.loadSong(song, hop_length=hop_length)
+    print(f"Loaded song in {time.time() - start_time:.2f} seconds.")
 
-    latents = visualizer.getSpecCircleLatents(distance=distance)
+    step_time = time.time()  # Start timing for each step
+    print("Getting beat latents")
+    latents = visualizer.getBeatLatents(distance=distance, noteType=noteType)
+    print(f"Got beat latents in {time.time() - step_time:.2f} seconds.")
+    
     fps = visualizer.getFPS()
 
+    step_time = time.time()  # Reset step timing
+    print("Getting prompt embeds")
     prompt_embeds = visualizer.getPromptEmbeds(basePrompt=base_prompt, 
                                                targetPromptChromaScale=target_prompts, 
                                                method="slerp", 
@@ -20,16 +30,22 @@ def main(song, output_path, seed, hop_length, distance, base_prompt, target_prom
                                                decay_rate=decay_rate,
                                                boost_factor=boost_factor,
                                                boost_threshold=boost_threshold)
+    print(f"Got prompt embeds in {time.time() - step_time:.2f} seconds.")
 
-    print(latents.shape)
+    step_time = time.time()  # Reset step timing
     images = visualizer.getVisuals(latents=latents, 
                                    promptEmbeds=prompt_embeds, 
                                    guidance_scale=guidance_scale)
+    print(f"Generated visuals in {time.time() - step_time:.2f} seconds.")
 
+    step_time = time.time()  # Reset step timing
     create_mp4_from_pil_images(image_array=images, 
                                output_path=output_path, 
                                song=song, 
                                fps=fps)
+    print(f"Created MP4 in {time.time() - step_time:.2f} seconds.")
+    
+    print(f"Total execution time: {time.time() - start_time:.2f} seconds.")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate a visualized video based on music and prompts.")
@@ -57,6 +73,8 @@ if __name__ == "__main__":
     parser.add_argument("--decay_rate", type=float, default=0.8 )
     parser.add_argument("--boost_factor", type=float, default=1.75 )
     parser.add_argument("--boost_threshold", type=float, default=0.4 )
+    parser.add_argument("--note_type", type=str, default="quarter",help="whole, half, or quarter" )
+    
 
     args = parser.parse_args()
 
@@ -71,4 +89,5 @@ if __name__ == "__main__":
          guidance_scale=args.guidance_scale,
          decay_rate = args.decay_rate,
          boost_factor = args.boost_factor,
-         boost_threshold = args.boost_threshold)
+         boost_threshold = args.boost_threshold,
+         noteType = args.note_type)

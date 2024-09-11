@@ -20,17 +20,22 @@ Future plan: Reduce spaziness of high bpm music, interpolation of overall contet
 
 Learning Goals: diffusion noise methods, quantization, audio transforms
 
+
+## CURRENT IMPLEMENTATION
+
+Noise vectors are made via latent walking in a circlular direction which is influenced by the beat and power of percussion. There is now cubic in out easing
+
+Promt embeddings is a mess
 ## CURRENT TESTING
-- Different interplation methods
-- Weighing chromatic notes differently
-- Smoothing transitions
+- Make prompt embedding interpolate with smoothing via onset and the chroma that is most influential to the onset.
+- Switching to 
 
 ## TODO
 - [X] Create circular UNet input noise walk
 - [X] Create clip latent interpolation
-- [ ] Create segments in the image (inpainting), which each differ on their own walks
 - [X] Get signals from audio that can correspond with dominant melody, then get pitch into signal
-- [ ] Smooth out high bpm music
+- [X] Smooth out high bpm music
+- [X] Switch to instaflow
 - [ ] Real time performance (perhaps 1 step generation, or 1 step scheduler pass, or quantization, or mlx optimization... loading song first then playing it to simulate realtime)
 
 ## License
