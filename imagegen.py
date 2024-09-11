@@ -12,10 +12,6 @@ import math
 
 
 
-from utils import LatentInitCircular
-
-
-
 
 class NoiseVisualizer:
     def __init__(self, device="mps", weightType=torch.float16,seed=42069):
@@ -32,40 +28,82 @@ class NoiseVisualizer:
         self.sr = sr
         self.y = y
         
-        #create spectrogram
-        spec = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=128,fmax=8000, 
-                                              hop_length=self.hop_length)
-
-        #get mean power at each time point
-        specm=np.mean(spec,axis=0)
-
-        #compute power gradient across time points
-        self.gradm=np.gradient(specm)
-
-        #set max to 1
-        #self.gradm=gradm/np.max(gradm)
-
-        #set negative gradient time points to zero 
-        #self.gradm = gradm.clip(min=0)
-            
-        #normalize mean power between 0-1
-        self.specm = (specm-np.min(specm))/np.ptp(specm)
-        
         y_harmonic, y_percussive = librosa.effects.hpss(y)
         
+        # Latent generaton
+        
+        self.beat, self.beat_frames = librosa.beat.beat_track(y=y_percussive, sr=sr,hop_length=self.hop_length)
+        
+        melSpec = librosa.feature.melspectrogram(y=y_percussive,sr=sr, n_mels = 256, hop_length=self.hop_length)
+        self.melSpec = np.sum(melSpec,axis=0)
+        
+        
+        # Prompt Generation
         self.chroma = librosa.feature.chroma_cqt(y=y_harmonic, sr=sr, hop_length=self.hop_length)
         
         self.chromaGrad = np.gradient(self.chroma)
         
-    def getSpecCircleLatents(self,distance=2):
-        noiseCircle = LatentInitCircular(steps = self.specm.shape[0],distance=distance)
-        specmScaled = (self.specm * (self.specm.shape[0] - 1)).astype('int32') # rescaling 
-        latents = noiseCircle[specmScaled]
+        self.steps = self.melSpec.shape[0]
+        
+    def getEasedBeats(self, noteType):
+        def cubic_in_out_numpy(t):
+            return np.where(t < 0.5, 4 * t**3, 1 - (-2 * t + 2)**3 / 2)
+
+        if noteType == "half":
+            beat_frames = self.beat_frames[::2]
+        elif noteType == "whole":
+            beat_frames = self.beat_frames[::4]
+        else:
+            beat_frames = self.beat_frames
+            
+        # Initialize output array
+        output_array = np.zeros(self.steps, float)
+
+        # Normalize the mel spectrogram values at the beat frames and set them in the output array
+        output_array[beat_frames] = librosa.util.normalize(self.melSpec[beat_frames])
+
+        # Interpolate between the beat frames
+        last_beat_idx = None
+        for current_idx in beat_frames:
+            if last_beat_idx is not None:
+                # Interpolate between the previous beat and current beat
+                for j in range(last_beat_idx + 1, current_idx):
+                    t = (j - last_beat_idx) / (current_idx - last_beat_idx)
+                    eased_value = cubic_in_out_numpy(np.array(t))
+                    output_array[j] = eased_value
+            last_beat_idx = current_idx
+
+        return torch.tensor(output_array, dtype=self.weightType)
+    
+    def getBeatLatents(self, distance, noteType): 
+        # shape: (batch, latent channels, height, width)
+        shape = (1, 4, 64, 64)
+        
+        # Initialize random noise for X and Y coordinates of the walk
+        walkNoiseX = torch.randn(shape, dtype=self.weightType, device=self.device)
+        walkNoiseY = torch.randn(shape, dtype=self.weightType, device=self.device)
+        
+        # Generate cosine and sine scales for the circular walk
+        walkScaleX = torch.cos(torch.linspace(0, distance, self.steps, dtype=self.weightType, device=self.device) * math.pi)
+        walkScaleY = torch.sin(torch.linspace(0, distance, self.steps, dtype=self.weightType, device=self.device) * math.pi)
+        
+        # Apply the easing values to the scales (mapping easing values to noise)
+        easing_values = self.getEasedBeats(noteType=noteType).to(self.device)
+        
+        walkScaleX = walkScaleX * easing_values
+        walkScaleY = walkScaleY * easing_values
+        
+        # Generate the noise tensors based on the interpolated scales
+        noiseX = torch.tensordot(walkScaleX, walkNoiseX, dims=0).to(self.device)
+        noiseY = torch.tensordot(walkScaleY, walkNoiseY, dims=0).to(self.device)
+        
+        # Add the noise contributions for X and Y to create the latent walk
+        latents = torch.add(noiseX, noiseY)
         latents = latents.squeeze(1)
         return latents
 
     def getFPS(self):
-        return self.sr / self.hop_length 
+        return self.sr / self.hop_length
     
     def slerp(self, v0: FloatTensor, v1: FloatTensor, t: float|FloatTensor, DOT_THRESHOLD=0.9995):
         '''
