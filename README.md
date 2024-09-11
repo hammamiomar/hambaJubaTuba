@@ -3,7 +3,7 @@
 
 
 
-[![Sample](https://img.youtube.com/vi/bJ7pwREHQSk/0.jpg)](https://www.youtube.com/watch?v=bJ7pwREHQSk)
+[![Sample](https://img.youtube.com/vi/a_UTZs5M2ns/0.jpg)](https://www.youtube.com/watch?v=a_UTZs5M2ns)
 
 
 A music visualizer which creates visualizations via stable diffusion XS and audio features via librosa.
