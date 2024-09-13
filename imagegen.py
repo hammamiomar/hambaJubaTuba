@@ -2,6 +2,7 @@ import torch
 from torch import FloatTensor, LongTensor, Tensor, Size, lerp, zeros_like
 from torch.linalg import norm
 from scipy.ndimage import gaussian_filter1d
+from scipy.ndimage import gaussian_filter
 
 from diffusers import StableDiffusionPipeline
 import librosa
@@ -150,7 +151,7 @@ class NoiseVisualizer:
         )
         return interp_embed
     
-    def getPromptEmbeds(self, basePrompt, targetPromptChromaScale, method="slerp", alpha=0.5, sigma=2):
+    def getPromptEmbedsOnsetFocus(self, basePrompt, targetPromptChromaScale, method="slerp", alpha=0.5, sigma=2):
         chroma = self.chroma_cq.T  # shape: (numFrames, 12)
         numFrames = chroma.shape[0]
 
@@ -253,8 +254,21 @@ class NoiseVisualizer:
         return interpolatedEmbeds
         
         
-    
-    def getPromptEmbedsCum(self, basePrompt, targetPromptChromaScale, alpha=0.5, sigma=2):
+    def getPromptEmbedsCum(self, basePrompt, targetPromptChromaScale, alpha=0.5, sigma_time=2, sigma_chroma=1):
+        """
+        Generates interpolated embeddings with multivariate smoothing applied to alpha values.
+
+        Parameters:
+        - basePrompt (str): The base prompt text.
+        - targetPromptChromaScale (str): The target prompt with chroma scaling.
+        - alpha (float): The scaling factor for alpha values.
+        - sigma_time (float): Standard deviation for Gaussian kernel in the time dimension.
+        - sigma_chroma (float): Standard deviation for Gaussian kernel in the chroma dimension.
+
+        Returns:
+        - interpolatedEmbeds (torch.Tensor): The interpolated embeddings tensor.
+        """
+        # Transpose chroma to shape: (numFrames, 12)
         chroma = self.chroma_cq.T  # shape: (numFrames, 12)
         numFrames = chroma.shape[0]
         number_of_chromas = self.number_of_chromas  # Retrieve the number of chromas to consider
@@ -299,9 +313,20 @@ class NoiseVisualizer:
         alphas[start_frame:end_frame, :] = alpha_values
         chromas_per_frame[start_frame:end_frame, :] = chroma_indices.reshape(1, number_of_chromas)
 
-        # Apply temporal smoothing to alphas (optional)
-        for n in range(number_of_chromas):
-            alphas[:, n] = gaussian_filter1d(alphas[:, n], sigma=sigma)
+        # **Multivariate Temporal and Chroma Smoothing**
+        # Apply a 2D Gaussian filter to smooth across time and chroma dimensions
+        # The Gaussian filter requires specifying the sigma for each axis
+        # Axis 0: Time (frames), Axis 1: Chroma
+        alphas_smoothed = gaussian_filter(alphas, sigma=(sigma_time, sigma_chroma), mode='reflect')
+
+        # **Re-normalize Alphas Per Frame to Ensure the Sum Equals alpha**
+        magnitudes_sum = alphas_smoothed.sum(axis=1, keepdims=True) + 1e-8  # Avoid division by zero
+        alphas_normalized = (alphas_smoothed / magnitudes_sum) * alpha  # shape: (numFrames, number_of_chromas)
+
+        # **Update the Alphas Array with the Smoothed and Normalized Alphas**
+        alphas = alphas_normalized
+
+        # **Proceed with Embedding Interpolation as Before**
 
         # Get baseEmbeds and targetEmbeds
         baseInput = self.tokenizer(
@@ -349,6 +374,102 @@ class NoiseVisualizer:
         interpolatedEmbeds = torch.stack(interpolatedEmbedsAll)  # shape: (numFrames, seq_len, hidden_size)
 
         return interpolatedEmbeds
+    # def getPromptEmbedsCum(self, basePrompt, targetPromptChromaScale, alpha=0.5, sigma_time=2, sigma_chroma=1):
+    #     chroma = self.chroma_cq.T  # shape: (numFrames, 12)
+    #     numFrames = chroma.shape[0]
+    #     number_of_chromas = self.number_of_chromas  # Retrieve the number of chromas to consider
+
+    #     # Onset frames and top N chromas at onsets
+    #     onset_frames = self.onset_bt
+    #     top_chromas_at_onsets = self.top_chromas[:, self.onset_bt]  # shape: (number_of_chromas, len(onset_bt))
+
+    #     # Initialize alphas and chroma indices per frame
+    #     alphas = np.zeros((numFrames, number_of_chromas))
+    #     chromas_per_frame = np.full((numFrames, number_of_chromas), -1, dtype=int)
+
+    #     # For each onset interval
+    #     for i in range(len(onset_frames) - 1):
+    #         start_frame = onset_frames[i]
+    #         end_frame = onset_frames[i + 1]
+    #         chroma_indices = top_chromas_at_onsets[:, i]  # shape: (number_of_chromas,)
+
+    #         if start_frame == end_frame:
+    #             end_frame += 1
+
+    #         # Extract chroma magnitudes of the selected chromas in this interval
+    #         chroma_magnitudes = chroma[start_frame:end_frame, chroma_indices]  # shape: (interval_length, number_of_chromas)
+
+    #         # Normalize chroma magnitudes per frame to sum to alpha
+    #         magnitudes_sum = chroma_magnitudes.sum(axis=1, keepdims=True) + 1e-8  # Avoid division by zero
+    #         alpha_values = (chroma_magnitudes / magnitudes_sum) * alpha  # shape: (interval_length, number_of_chromas)
+
+    #         # Assign alpha_values and chroma indices to frames
+    #         alphas[start_frame:end_frame, :] = alpha_values
+    #         chromas_per_frame[start_frame:end_frame, :] = chroma_indices.reshape(1, number_of_chromas)
+
+    #     # Handle frames after the last onset
+    #     start_frame = onset_frames[-1]
+    #     chroma_indices = top_chromas_at_onsets[:, -1]  # shape: (number_of_chromas,)
+    #     end_frame = numFrames
+
+    #     chroma_magnitudes = chroma[start_frame:end_frame, chroma_indices]  # shape: (interval_length, number_of_chromas)
+    #     magnitudes_sum = chroma_magnitudes.sum(axis=1, keepdims=True) + 1e-8
+    #     alpha_values = (chroma_magnitudes / magnitudes_sum) * alpha
+
+    #     alphas[start_frame:end_frame, :] = alpha_values
+    #     chromas_per_frame[start_frame:end_frame, :] = chroma_indices.reshape(1, number_of_chromas)
+
+    #     # Apply temporal smoothing to alphas (optional)
+    #     for n in range(number_of_chromas):
+    #         alphas[:, n] = gaussian_filter1d(alphas[:, n], sigma=sigma)
+
+    #     # Get baseEmbeds and targetEmbeds
+    #     baseInput = self.tokenizer(
+    #         basePrompt,
+    #         return_tensors="pt",
+    #         padding="max_length",
+    #         truncation=True,
+    #         max_length=77,
+    #     ).input_ids
+    #     baseEmbeds = self.textEncoder(baseInput)[0].squeeze(0)  # shape: (seq_len, hidden_size)
+
+    #     targetInputs = self.tokenizer(
+    #         targetPromptChromaScale,
+    #         return_tensors="pt",
+    #         padding="max_length",
+    #         truncation=True,
+    #         max_length=77,
+    #     ).input_ids
+    #     targetEmbeds = self.textEncoder(targetInputs)[0]  # shape: (12, seq_len, hidden_size)
+
+    #     # Initialize interpolatedEmbedsAll
+    #     interpolatedEmbedsAll = []
+
+    #     # For each frame
+    #     for frame in range(numFrames):
+    #         alpha_values = alphas[frame, :]  # shape: (number_of_chromas,)
+    #         total_alpha = alpha_values.sum()
+    #         if total_alpha > alpha:
+    #             alpha_values = (alpha_values / total_alpha) * alpha
+    #             total_alpha = alpha
+
+    #         base_alpha = 1.0 - total_alpha
+    #         chroma_indices = chromas_per_frame[frame, :]  # shape: (number_of_chromas,)
+
+    #         # Start with baseEmbeds multiplied by base_alpha
+    #         interpolatedEmbed = base_alpha * baseEmbeds
+
+    #         # Add contributions from each target chroma
+    #         for n in range(number_of_chromas):
+    #             target_embed = targetEmbeds[chroma_indices[n]]  # shape: (seq_len, hidden_size)
+    #             interpolatedEmbed += alpha_values[n] * target_embed
+
+    #         interpolatedEmbedsAll.append(interpolatedEmbed.unsqueeze(0))  # shape: (1, seq_len, hidden_size)
+
+    #     interpolatedEmbeds = torch.stack(interpolatedEmbedsAll)  # shape: (numFrames, seq_len, hidden_size)
+
+    #     return interpolatedEmbeds
+    
     def getVisuals(self, latents, promptEmbeds, num_inference_steps=1, batch_size=1):
         #self.pipe.vae = self.vae
         self.pipe.to(device=self.device, dtype=self.weightType)

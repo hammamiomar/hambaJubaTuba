@@ -15,7 +15,7 @@ dtype_map = {
 }
 
 def main(song, output_path, device, weightType, seed, hop_length, distance, base_prompt, target_prompts, alpha, 
-         noteType, sigma, jitter_strength, number_of_chromas):
+         noteType, sigma_time, sigma_chroma, jitter_strength, number_of_chromas):
     
     visualizer = NoiseVisualizer(device=device, weightType=weightType, seed=seed)
 
@@ -35,7 +35,8 @@ def main(song, output_path, device, weightType, seed, hop_length, distance, base
     prompt_embeds = visualizer.getPromptEmbedsCum(basePrompt=base_prompt, 
                                                targetPromptChromaScale=target_prompts, 
                                                alpha=alpha,
-                                               sigma=sigma)
+                                               sigma_time=sigma_time,
+                                               sigma_chroma=sigma_chroma)
     print(f"Got prompt embeds in {time.time() - step_time:.2f} seconds.")
 
     step_time = time.time()  # Reset step timing
@@ -76,7 +77,8 @@ if __name__ == "__main__":
                            "turkish rug in a room", 
                            "horse"], help="List of target prompts for chroma scaling.")
     parser.add_argument("--alpha", type=float, default=0.8, help="Alpha value for prompt interpolation.")
-    parser.add_argument("--sigma", type=float, default=2, help="Sigma value for prompt interpolation.")
+    parser.add_argument("--sigma_time", type=float, default=2, help="Sigma value for prompt interpolation.")
+    parser.add_argument("--sigma_chroma", type=float, default=1, help="Sigma value for prompt interpolation.")
     parser.add_argument("--note_type", type=str, default="quarter",help="whole, half, or quarter" )
     parser.add_argument("--jitter_strength", type=float, default=0.1, help="Jitter strength for latent interpolation")
     parser.add_argument("--number_of_chromas", type=int, default=4)
@@ -95,6 +97,7 @@ if __name__ == "__main__":
          target_prompts=args.target_prompts, 
          alpha=args.alpha, 
          noteType = args.note_type,
-         sigma = args.sigma,
+         sigma_time = args.sigma_time,
+         sigma_chroma = args.sigma_chroma,
          jitter_strength = args.jitter_strength,
          number_of_chromas = args.number_of_chromas)

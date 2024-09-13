@@ -35,7 +35,8 @@ python main.py --song "songs/chamakay.mp3" --output "outputs/chamakay.mp4" --alp
 "A funky, futuristic techno dancer in a glowing neon suit, moving in robotic precision amidst flashing holograms and floating geometric shapes, set against the backdrop of a neon-lit city skyline." \
 --decay_rate 0.8 --boost_factor 3.0 --boost_threshold 0.3 --guidance_scale 0
 
-python main.py --song "songs/promisus.mp3" --output "outputs/promisus.mp4" --alpha 0.5 --distance 0.36 --seed 31412 --base_prompt "A quirky turtle humanoid, adorned with a vintage hat, dancing smoothly with a lit cigarette in its beak, under glowing neon signs in a retro-futuristic cityscape. The turtle’s movements are cute and comical, swaying gently with the rhythm of the music." \
+python main.py --song "songs/promisus.mp3" --output "outputs/promisus.mp4" --alpha 0.5 --distance 0.36 --seed 31412 \
+--base_prompt "A quirky turtle humanoid, adorned with a vintage hat, dancing smoothly with a lit cigarette in its beak, under glowing neon signs in a retro-futuristic cityscape. The turtle’s movements are cute and comical, swaying gently with the rhythm of the music." \
 --target_prompts "A scruffy but lovable dog, wearing a bandana, dancing awkwardly in the middle of a busy street at sunset. Cars swerve around as it clumsily spins, its tail wagging furiously to the beat, oblivious to the chaos around it." \
 "A lively salsa dancer with fiery red clothing, spinning passionately in a tropical nightclub filled with vibrant colors and pulsing lights. Their movements are sharp, rhythmic, and full of flair as they weave between the swirling lights and onlookers." \
 "A street-savvy hip hop dancer, with a leather jacket and sneakers, busting out fluid, gravity-defying moves on the graffiti-covered streets of an urban jungle. Streetlights flicker as the dancer moves in perfect sync with booming bass and distant sirens." \
@@ -348,20 +349,20 @@ python main.py --song "songs/untangle.mp3" --output "outputs/v2/untangle2Cum12.m
 "a strange fruit, shriveled yet vibrant, sitting in a basket no one has touched, japanese aesthetic, muted and surreal, life on the edge of decay"
 
 
-python main.py --song "inputs/boom.mp3" --output "outputs/boom.mp4" --device "cuda" --weightType "float32" --alpha 1.0 --distance 0.025 --seed 3444199028478374 \
---hop_length 377 --note_type "quarter" --sigma 8 --jitter_strength 0.01 --number_of_chromas 2 \
+python main.py --song "inputs/boom.mp3" --output "outputs/boom2Sig2.mp4" --device "cuda" --weightType "float32" --alpha 0.8 --distance 0.025 --seed 3444199028478374 \
+--hop_length 377 --note_type "quarter" --sigma 2 --jitter_strength 0.01 --number_of_chromas 3 \
 --base_prompt \
-"sea grass swaying slowly, barely alive, in a forgotten wind, japanese aesthetic, washed-out watercolor, calm despair in the stillness" \
+"A quirky turtle humanoid, adorned with a vintage hat, dancing smoothly with a lit cigarette in its beak, under glowing neon signs in a retro-futuristic cityscape. The turtle’s movements are cute and comical, swaying gently with the rhythm of the music." \
 --target_prompts \
-"grass bending under the unseen weight of time, japanese aesthetic, ghostly hues, a burden no one notices" \
-"water falling into an endless, empty bucket, ripples fading before they form, japanese aesthetic, soft melancholy, nothing echoes" \
-"a tree and rock, forever locked in silent conversation, japanese aesthetic, faded colors, a dialogue no one hears" \
-"a disco ball spinning slowly under a pale sky, its light lost in the sand, japanese aesthetic, glimmers of a forgotten world" \
-"an empty chair in the sand, facing nothing, japanese aesthetic, muted colors, waiting for something that never arrives" \
-"a lone tree in an infinite desert, its shadow the only movement, japanese aesthetic, watercolor void, endless silence" \
-"bedsheet draped over a forgotten chair, folds like memories, untouched for years, japanese aesthetic, stillness thick with absence" \
-"fire burning without warmth, flickers lost to the night, japanese aesthetic, soft watercolor hues, as if the flames themselves are tired" \
-"an old computer resting in the corner of a garage, screen dark, cables like vines, japanese aesthetic, the slow decay of forgotten days" \
-"a cigarette burned to its end, smoke curling into oblivion, japanese aesthetic, soft lines, the final exhale of silence" \
-"timer ticking softly on a stove that will never cook again, japanese aesthetic, dull tones, counting down to nothing" \
-"a strange fruit, shriveled yet vibrant, sitting in a basket no one has touched, japanese aesthetic, muted and surreal, life on the edge of decay"
+"A scruffy but lovable dog wearing a bandana, awkwardly dancing in the middle of a busy street at sunset. Cars swerve around as the dog clumsily spins, tail wagging furiously to the beat, oblivious to the chaos." \
+"A vibrant salsa-dancing fox in fiery red attire, spinning passionately in a tropical nightclub filled with vibrant colors and pulsing lights. Its movements are sharp, rhythmic, and full of flair." \
+"A street-savvy chimpanzee with a leather jacket and sneakers, busting out fluid, gravity-defying moves on graffiti-covered urban streets. Streetlights flicker as it moves in sync with booming bass." \
+"A futuristic, metallic owl robot with sleek chrome wings, dancing in a sterile high-tech nightclub where laser beams cut through the air. Its precise steps create sparks that dance with the techno beats." \
+"A smooth jazz cat, dressed in a sharp pinstripe suit and fedora, twirling effortlessly under the warm amber glow of a 1940s jazz club. The atmosphere is smoky as the cat glides across the floor." \
+"A graceful ballerina deer, dressed in a soft pastel tutu, twirling delicately in a vast ethereal meadow covered in mist. The rising sun casts a gentle golden light on the serene dancer." \
+"A passionate tango elephant, silhouetted in a dimly lit room, with long flowing garments that swirl dramatically with every sharp movement. Its deliberate steps echo through the silent room." \
+"A fiery flamenco rooster, heels pounding against the wooden stage with rhythmic intensity, hands clapping sharply and a red shawl swirling around. Surrounded by a lively audience and castanets." \
+"A joyful samba monkey in a bright feathered costume, moving energetically through a bustling street carnival. Confetti fills the air as crowds cheer and colorful floats pass by." \
+"A breakdancing kangaroo in an underground club, spinning and flipping on a cracked concrete floor. Walls lined with glowing neon graffiti as the crowd forms a circle, cheering wildly." \
+"A graceful belly dancing peacock with flowing jeweled feathers, moving hypnotically under a canopy of stars in a desert oasis. Soft lantern light illuminates the scene with swaying palm trees." \
+"A funky, futuristic techno dolphin in a glowing neon suit, moving with robotic precision amidst flashing holograms and floating geometric shapes against a neon-lit city skyline."
