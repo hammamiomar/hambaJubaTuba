@@ -349,8 +349,8 @@ python main.py --song "songs/untangle.mp3" --output "outputs/v2/untangle2Cum12.m
 "a strange fruit, shriveled yet vibrant, sitting in a basket no one has touched, japanese aesthetic, muted and surreal, life on the edge of decay"
 
 
-python main.py --song "inputs/boom.mp3" --output "outputs/boom2Sig2.mp4" --device "cuda" --weightType "float32" --alpha 0.8 --distance 0.025 --seed 3444199028478374 \
---hop_length 377 --note_type "quarter" --sigma 2 --jitter_strength 0.01 --number_of_chromas 3 \
+python main.py --song "inputs/boom.mp3" --output "outputs/boom2Sig2dga.mp4" --device "cuda" --weightType "float32" --alpha 0.8 --distance 0.5 --seed 11333 \
+--hop_length 377 --note_type "quarter" --sigma_time 2 --sigma_chroma 1 --jitter_strength 0.01 --number_of_chromas 2 \
 --base_prompt \
 "A quirky turtle humanoid, adorned with a vintage hat, dancing smoothly with a lit cigarette in its beak, under glowing neon signs in a retro-futuristic cityscape. The turtle’s movements are cute and comical, swaying gently with the rhythm of the music." \
 --target_prompts \

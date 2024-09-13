@@ -25,18 +25,24 @@ def main(song, output_path, device, weightType, seed, hop_length, distance, base
 
     step_time = time.time()  # Start timing for each step
     print("Getting beat latents")
-    latents = visualizer.getBeatLatents(distance=distance, noteType=noteType, jitter_strength=jitter_strength)
+    #latents = visualizer.getBeatLatents(distance=distance, noteType=noteType, jitter_strength=jitter_strength)
+    latents = visualizer.getBeatLatentsRandom(max_step_size=distance, noteType=noteType, jitter_strength=jitter_strength)
     print(f"Got beat latents in {time.time() - step_time:.2f} seconds.")
     
     fps = visualizer.getFPS()
 
     step_time = time.time()  # Reset step timing
     print("Getting prompt embeds")
-    prompt_embeds = visualizer.getPromptEmbedsCum(basePrompt=base_prompt, 
+    # prompt_embeds = visualizer.getPromptEmbedsCum(basePrompt=base_prompt, 
+    #                                            targetPromptChromaScale=target_prompts, 
+    #                                            alpha=alpha,
+    #                                            sigma_time=sigma_time,
+    #                                            sigma_chroma=sigma_chroma)
+    
+    prompt_embeds = visualizer.getPromptEmbedsOnsetFocus(basePrompt=base_prompt, 
                                                targetPromptChromaScale=target_prompts, 
                                                alpha=alpha,
-                                               sigma_time=sigma_time,
-                                               sigma_chroma=sigma_chroma)
+                                               sigma=4)
     print(f"Got prompt embeds in {time.time() - step_time:.2f} seconds.")
 
     step_time = time.time()  # Reset step timing
