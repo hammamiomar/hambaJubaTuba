@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 import moviepy.editor as mpy
+import os
 import math
 
 def LatentInitCircular(steps, distance, weightType=torch.float16): # only circular walk for now..
@@ -50,7 +51,18 @@ def create_mp4_from_pil_images(image_array, output_path, song, fps, device='cpu'
     """
     # Validate the device parameter
     if device not in ['cuda', 'cpu', 'mps']:
-        raise ValueError("Invalid device. Choose 'cuda' for GPU acceleration or 'cpu' for default encoding.")
+            raise ValueError("Invalid device. Choose 'cuda' for GPU acceleration or 'cpu' for default encoding.")
+    
+    if device == "cuda":
+        ffmpeg_path = '/usr/bin/ffmpeg'  # Example path
+
+        # Verify that the path is correct
+        if not os.path.isfile(ffmpeg_path):
+                raise FileNotFoundError(f"ffmpeg not found at {ffmpeg_path}")
+
+        # Set the ffmpeg binary path in moviepy's config
+        mpy.config.change_settings({"FFMPEG_BINARY": ffmpeg_path})
+
 
     # Convert PIL images to MoviePy ImageClips
     clips = [
