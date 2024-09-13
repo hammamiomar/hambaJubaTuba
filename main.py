@@ -5,13 +5,13 @@ from utils import create_mp4_from_pil_images
 import torch
 import time
 
-def main(song, output_path, device, seed, hop_length, distance, base_prompt, target_prompts, alpha, 
+def main(song, output_path, device, weightType, seed, hop_length, distance, base_prompt, target_prompts, alpha, 
          noteType, sigma, jitter_strength, number_of_chromas):
     
-    visualizer = NoiseVisualizer(device=device, seed=seed)
+    visualizer = NoiseVisualizer(device=device, weightType=weightType, seed=seed)
 
     start_time = time.time()  # Start total timing
-    visualizer.loadSong(song, hop_length=hop_length, number_of_chromas=4)
+    visualizer.loadSong(song, hop_length=hop_length, number_of_chromas=number_of_chromas)
     print(f"Loaded song in {time.time() - start_time:.2f} seconds.")
 
     step_time = time.time()  # Start timing for each step
@@ -48,6 +48,7 @@ if __name__ == "__main__":
     parser.add_argument("--song", type=str, required=True, help="Path to the song file.")
     parser.add_argument("--output", type=str, required=True, help="Path to save the output video.")
     parser.add_argument("--device", type=str, required=True, help="device")
+    parser.add_argument("--weightType", type=str, required=True, help="weighType")
     parser.add_argument("--seed", type=int, default=133780085, help="Seed for noise generation.")
     parser.add_argument("--hop_length", type=int, default=377, help="Hop length for audio processing.")
     parser.add_argument("--distance", type=float, default=0.3, help="Distance for latent space generation.")
@@ -77,6 +78,7 @@ if __name__ == "__main__":
     main(song=args.song, 
          output_path=args.output, 
          device=args.device,
+         weightType=args.weightType,
          seed=args.seed, 
          hop_length=args.hop_length, 
          distance=args.distance, 
