@@ -54,7 +54,8 @@ def main(song, output_path, device, weightType, seed, hop_length, distance, base
     create_mp4_from_pil_images(image_array=images, 
                                output_path=output_path, 
                                song=song, 
-                               fps=fps)
+                               fps=fps,
+                               device=device)
     print(f"Created MP4 in {time.time() - step_time:.2f} seconds.")
     
     print(f"Total execution time: {time.time() - start_time:.2f} seconds.")
