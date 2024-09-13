@@ -309,3 +309,40 @@ python main.py --song "songs/untangle.mp3" --output "outputs/v2/untangle.mp4" --
 "a cigarette burned to its end, smoke curling into oblivion, japanese aesthetic, soft lines, the final exhale of silence" \
 "timer ticking softly on a stove that will never cook again, japanese aesthetic, dull tones, counting down to nothing" \
 "a strange fruit, shriveled yet vibrant, sitting in a basket no one has touched, japanese aesthetic, muted and surreal, life on the edge of decay"
+
+
+python main.py --song "songs/untangle.mp3" --output "outputs/v2/untangle2Cum.mp4" --alpha 0.95 --distance 0.025 --seed 9472056239 \
+--hop_length 377 --note_type "quarter" --sigma 6 --jitter_strength 0.1 --number_of_chromas 4 \
+--base_prompt \
+"sea grass swaying slowly, barely alive, in a forgotten wind, japanese aesthetic, washed-out watercolor, calm despair in the stillness" \
+--target_prompts \
+"grass bending under the unseen weight of time, japanese aesthetic, ghostly hues, a burden no one notices" \
+"water falling into an endless, empty bucket, ripples fading before they form, japanese aesthetic, soft melancholy, nothing echoes" \
+"a tree and rock, forever locked in silent conversation, japanese aesthetic, faded colors, a dialogue no one hears" \
+"a disco ball spinning slowly under a pale sky, its light lost in the sand, japanese aesthetic, glimmers of a forgotten world" \
+"an empty chair in the sand, facing nothing, japanese aesthetic, muted colors, waiting for something that never arrives" \
+"a lone tree in an infinite desert, its shadow the only movement, japanese aesthetic, watercolor void, endless silence" \
+"bedsheet draped over a forgotten chair, folds like memories, untouched for years, japanese aesthetic, stillness thick with absence" \
+"fire burning without warmth, flickers lost to the night, japanese aesthetic, soft watercolor hues, as if the flames themselves are tired" \
+"an old computer resting in the corner of a garage, screen dark, cables like vines, japanese aesthetic, the slow decay of forgotten days" \
+"a cigarette burned to its end, smoke curling into oblivion, japanese aesthetic, soft lines, the final exhale of silence" \
+"timer ticking softly on a stove that will never cook again, japanese aesthetic, dull tones, counting down to nothing" \
+"a strange fruit, shriveled yet vibrant, sitting in a basket no one has touched, japanese aesthetic, muted and surreal, life on the edge of decay"
+
+python main.py --song "songs/untangle.mp3" --output "outputs/v2/untangle2Cum12.mp4" --alpha 1.0 --distance 0.025 --seed 3444199028478374 \
+--hop_length 377 --note_type "quarter" --sigma 8 --jitter_strength 0.01 --number_of_chromas 12 \
+--base_prompt \
+"sea grass swaying slowly, barely alive, in a forgotten wind, japanese aesthetic, washed-out watercolor, calm despair in the stillness" \
+--target_prompts \
+"grass bending under the unseen weight of time, japanese aesthetic, ghostly hues, a burden no one notices" \
+"water falling into an endless, empty bucket, ripples fading before they form, japanese aesthetic, soft melancholy, nothing echoes" \
+"a tree and rock, forever locked in silent conversation, japanese aesthetic, faded colors, a dialogue no one hears" \
+"a disco ball spinning slowly under a pale sky, its light lost in the sand, japanese aesthetic, glimmers of a forgotten world" \
+"an empty chair in the sand, facing nothing, japanese aesthetic, muted colors, waiting for something that never arrives" \
+"a lone tree in an infinite desert, its shadow the only movement, japanese aesthetic, watercolor void, endless silence" \
+"bedsheet draped over a forgotten chair, folds like memories, untouched for years, japanese aesthetic, stillness thick with absence" \
+"fire burning without warmth, flickers lost to the night, japanese aesthetic, soft watercolor hues, as if the flames themselves are tired" \
+"an old computer resting in the corner of a garage, screen dark, cables like vines, japanese aesthetic, the slow decay of forgotten days" \
+"a cigarette burned to its end, smoke curling into oblivion, japanese aesthetic, soft lines, the final exhale of silence" \
+"timer ticking softly on a stove that will never cook again, japanese aesthetic, dull tones, counting down to nothing" \
+"a strange fruit, shriveled yet vibrant, sitting in a basket no one has touched, japanese aesthetic, muted and surreal, life on the edge of decay"

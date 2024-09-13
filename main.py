@@ -5,13 +5,13 @@ from utils import create_mp4_from_pil_images
 import torch
 import time
 
-def main(song, output_path, seed, hop_length, distance, base_prompt, target_prompts, alpha, 
-         noteType, sigma, jitter_strength):
-    device = "mps" if torch.backends.mps.is_available() else "cpu"
+def main(song, output_path, device, seed, hop_length, distance, base_prompt, target_prompts, alpha, 
+         noteType, sigma, jitter_strength, number_of_chromas):
+    
     visualizer = NoiseVisualizer(device=device, seed=seed)
 
     start_time = time.time()  # Start total timing
-    visualizer.loadSong(song, hop_length=hop_length)
+    visualizer.loadSong(song, hop_length=hop_length, number_of_chromas=4)
     print(f"Loaded song in {time.time() - start_time:.2f} seconds.")
 
     step_time = time.time()  # Start timing for each step
@@ -23,9 +23,8 @@ def main(song, output_path, seed, hop_length, distance, base_prompt, target_prom
 
     step_time = time.time()  # Reset step timing
     print("Getting prompt embeds")
-    prompt_embeds = visualizer.getPromptEmbeds(basePrompt=base_prompt, 
+    prompt_embeds = visualizer.getPromptEmbedsCum(basePrompt=base_prompt, 
                                                targetPromptChromaScale=target_prompts, 
-                                               method="slerp", 
                                                alpha=alpha,
                                                sigma=sigma)
     print(f"Got prompt embeds in {time.time() - step_time:.2f} seconds.")
@@ -48,6 +47,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate a visualized video based on music and prompts.")
     parser.add_argument("--song", type=str, required=True, help="Path to the song file.")
     parser.add_argument("--output", type=str, required=True, help="Path to save the output video.")
+    parser.add_argument("--device", type=str, required=True, help="device")
     parser.add_argument("--seed", type=int, default=133780085, help="Seed for noise generation.")
     parser.add_argument("--hop_length", type=int, default=377, help="Hop length for audio processing.")
     parser.add_argument("--distance", type=float, default=0.3, help="Distance for latent space generation.")
@@ -69,12 +69,14 @@ if __name__ == "__main__":
     parser.add_argument("--sigma", type=float, default=2, help="Sigma value for prompt interpolation.")
     parser.add_argument("--note_type", type=str, default="quarter",help="whole, half, or quarter" )
     parser.add_argument("--jitter_strength", type=float, default=0.1, help="Jitter strength for latent interpolation")
+    parser.add_argument("--number_of_chromas", type=int, default=4)
     
 
     args = parser.parse_args()
 
     main(song=args.song, 
          output_path=args.output, 
+         device=args.device,
          seed=args.seed, 
          hop_length=args.hop_length, 
          distance=args.distance, 
@@ -83,4 +85,5 @@ if __name__ == "__main__":
          alpha=args.alpha, 
          noteType = args.note_type,
          sigma = args.sigma,
-         jitter_strength = args.jitter_strength)
+         jitter_strength = args.jitter_strength,
+         number_of_chromas = args.number_of_chromas)
