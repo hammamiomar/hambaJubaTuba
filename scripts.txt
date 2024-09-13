@@ -366,3 +366,21 @@ python main.py --song "inputs/boom.mp3" --output "outputs/boom2Sig2dga.mp4" --de
 "A breakdancing kangaroo in an underground club, spinning and flipping on a cracked concrete floor. Walls lined with glowing neon graffiti as the crowd forms a circle, cheering wildly." \
 "A graceful belly dancing peacock with flowing jeweled feathers, moving hypnotically under a canopy of stars in a desert oasis. Soft lantern light illuminates the scene with swaying palm trees." \
 "A funky, futuristic techno dolphin in a glowing neon suit, moving with robotic precision amidst flashing holograms and floating geometric shapes against a neon-lit city skyline."
+
+python main.py --song "inputs/boom.mp3" --output "outputs/boomSingularOnsetWithRandomWalk.mp4" --device "cuda" --weightType "float32" --alpha 1.0 --distance 0.5 --seed 11333 \
+--hop_length 377 --note_type "quarter" --sigma_time 4 \
+--base_prompt \
+"A quirky turtle humanoid, adorned with a vintage hat, dancing smoothly with a lit cigarette in its beak, under glowing neon signs in a retro-futuristic cityscape. The turtle’s movements are cute and comical, swaying gently with the rhythm of the music." \
+--target_prompts \
+"A scruffy but lovable dog wearing a bandana, awkwardly dancing in the middle of a busy street at sunset. Cars swerve around as the dog clumsily spins, tail wagging furiously to the beat, oblivious to the chaos." \
+"A vibrant salsa-dancing fox in fiery red attire, spinning passionately in a tropical nightclub filled with vibrant colors and pulsing lights. Its movements are sharp, rhythmic, and full of flair." \
+"A street-savvy chimpanzee with a leather jacket and sneakers, busting out fluid, gravity-defying moves on graffiti-covered urban streets. Streetlights flicker as it moves in sync with booming bass." \
+"A futuristic, metallic owl robot with sleek chrome wings, dancing in a sterile high-tech nightclub where laser beams cut through the air. Its precise steps create sparks that dance with the techno beats." \
+"A smooth jazz cat, dressed in a sharp pinstripe suit and fedora, twirling effortlessly under the warm amber glow of a 1940s jazz club. The atmosphere is smoky as the cat glides across the floor." \
+"A graceful ballerina deer, dressed in a soft pastel tutu, twirling delicately in a vast ethereal meadow covered in mist. The rising sun casts a gentle golden light on the serene dancer." \
+"A passionate tango elephant, silhouetted in a dimly lit room, with long flowing garments that swirl dramatically with every sharp movement. Its deliberate steps echo through the silent room." \
+"A fiery flamenco rooster, heels pounding against the wooden stage with rhythmic intensity, hands clapping sharply and a red shawl swirling around. Surrounded by a lively audience and castanets." \
+"A joyful samba monkey in a bright feathered costume, moving energetically through a bustling street carnival. Confetti fills the air as crowds cheer and colorful floats pass by." \
+"A breakdancing kangaroo in an underground club, spinning and flipping on a cracked concrete floor. Walls lined with glowing neon graffiti as the crowd forms a circle, cheering wildly." \
+"A graceful belly dancing peacock with flowing jeweled feathers, moving hypnotically under a canopy of stars in a desert oasis. Soft lantern light illuminates the scene with swaying palm trees." \
+"A funky, futuristic techno dolphin in a glowing neon suit, moving with robotic precision amidst flashing holograms and floating geometric shapes against a neon-lit city skyline."

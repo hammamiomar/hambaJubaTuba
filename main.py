@@ -42,7 +42,7 @@ def main(song, output_path, device, weightType, seed, hop_length, distance, base
     prompt_embeds = visualizer.getPromptEmbedsOnsetFocus(basePrompt=base_prompt, 
                                                targetPromptChromaScale=target_prompts, 
                                                alpha=alpha,
-                                               sigma=4)
+                                               sigma=sigma_time)
     print(f"Got prompt embeds in {time.time() - step_time:.2f} seconds.")
 
     step_time = time.time()  # Reset step timing
