@@ -348,7 +348,7 @@ python main.py --song "songs/untangle.mp3" --output "outputs/v2/untangle2Cum12.m
 "a strange fruit, shriveled yet vibrant, sitting in a basket no one has touched, japanese aesthetic, muted and surreal, life on the edge of decay"
 
 
-python main.py --song "inputs/boom.mp3" --output "outputs/boom.mp4" --device "cuda" --alpha 1.0 --distance 0.025 --seed 3444199028478374 \
+python main.py --song "inputs/boom.mp3" --output "outputs/boom.mp4" --device "cuda" --weightType "float32" --alpha 1.0 --distance 0.025 --seed 3444199028478374 \
 --hop_length 377 --note_type "quarter" --sigma 8 --jitter_strength 0.01 --number_of_chromas 2 \
 --base_prompt \
 "sea grass swaying slowly, barely alive, in a forgotten wind, japanese aesthetic, washed-out watercolor, calm despair in the stillness" \

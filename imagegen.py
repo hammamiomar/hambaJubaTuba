@@ -15,7 +15,7 @@ import math
 
 
 class NoiseVisualizer:
-    def __init__(self, device="mps", weightType=torch.float16,seed=42069):
+    def __init__(self, device="mps", weightType=torch.float16, seed=42069):
         torch.manual_seed(seed)
         self.device = device
         self.weightType = weightType

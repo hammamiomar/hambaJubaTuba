@@ -5,6 +5,15 @@ from utils import create_mp4_from_pil_images
 import torch
 import time
 
+dtype_map = {
+    'float32': torch.float32,
+    'float64': torch.float64,
+    'float16': torch.float16,
+    'bfloat16': torch.bfloat16,
+    'int32': torch.int32,
+    'int64': torch.int64
+}
+
 def main(song, output_path, device, weightType, seed, hop_length, distance, base_prompt, target_prompts, alpha, 
          noteType, sigma, jitter_strength, number_of_chromas):
     
@@ -78,7 +87,7 @@ if __name__ == "__main__":
     main(song=args.song, 
          output_path=args.output, 
          device=args.device,
-         weightType=args.weightType,
+         weightType=dtype_map[args.weightType],
          seed=args.seed, 
          hop_length=args.hop_length, 
          distance=args.distance, 
