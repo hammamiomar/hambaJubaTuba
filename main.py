@@ -6,7 +6,7 @@ import torch
 import time
 
 def main(song, output_path, seed, hop_length, distance, base_prompt, target_prompts, alpha, 
-         guidance_scale, decay_rate, boost_factor, noteType, boost_threshold):
+         noteType, sigma, jitter_strength):
     device = "mps" if torch.backends.mps.is_available() else "cpu"
     visualizer = NoiseVisualizer(device=device, seed=seed)
 
@@ -16,7 +16,7 @@ def main(song, output_path, seed, hop_length, distance, base_prompt, target_prom
 
     step_time = time.time()  # Start timing for each step
     print("Getting beat latents")
-    latents = visualizer.getBeatLatents(distance=distance, noteType=noteType)
+    latents = visualizer.getBeatLatents(distance=distance, noteType=noteType, jitter_strength=jitter_strength)
     print(f"Got beat latents in {time.time() - step_time:.2f} seconds.")
     
     fps = visualizer.getFPS()
@@ -27,15 +27,12 @@ def main(song, output_path, seed, hop_length, distance, base_prompt, target_prom
                                                targetPromptChromaScale=target_prompts, 
                                                method="slerp", 
                                                alpha=alpha,
-                                               decay_rate=decay_rate,
-                                               boost_factor=boost_factor,
-                                               boost_threshold=boost_threshold)
+                                               sigma=sigma)
     print(f"Got prompt embeds in {time.time() - step_time:.2f} seconds.")
 
     step_time = time.time()  # Reset step timing
     images = visualizer.getVisuals(latents=latents, 
-                                   promptEmbeds=prompt_embeds, 
-                                   guidance_scale=guidance_scale)
+                                   promptEmbeds=prompt_embeds)
     print(f"Generated visuals in {time.time() - step_time:.2f} seconds.")
 
     step_time = time.time()  # Reset step timing
@@ -69,11 +66,9 @@ if __name__ == "__main__":
                            "turkish rug in a room", 
                            "horse"], help="List of target prompts for chroma scaling.")
     parser.add_argument("--alpha", type=float, default=0.8, help="Alpha value for prompt interpolation.")
-    parser.add_argument("--guidance_scale", type=float, default=0, help="Guidance scale for image generation.")
-    parser.add_argument("--decay_rate", type=float, default=0.8 )
-    parser.add_argument("--boost_factor", type=float, default=1.75 )
-    parser.add_argument("--boost_threshold", type=float, default=0.4 )
+    parser.add_argument("--sigma", type=float, default=2, help="Sigma value for prompt interpolation.")
     parser.add_argument("--note_type", type=str, default="quarter",help="whole, half, or quarter" )
+    parser.add_argument("--jitter_strength", type=float, default=0.1, help="Jitter strength for latent interpolation")
     
 
     args = parser.parse_args()
@@ -86,8 +81,6 @@ if __name__ == "__main__":
          base_prompt=args.base_prompt, 
          target_prompts=args.target_prompts, 
          alpha=args.alpha, 
-         guidance_scale=args.guidance_scale,
-         decay_rate = args.decay_rate,
-         boost_factor = args.boost_factor,
-         boost_threshold = args.boost_threshold,
-         noteType = args.note_type)
+         noteType = args.note_type,
+         sigma = args.sigma,
+         jitter_strength = args.jitter_strength)

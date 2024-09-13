@@ -2,7 +2,6 @@ outputs/
 songs/
 audio.ipynb
 main.ipynb
-scripts.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

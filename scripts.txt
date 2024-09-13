@@ -160,3 +160,152 @@ python main.py --song "songs/snippets/fishmansSnip.mp3" --output "outputs/fishma
 "A graceful belly dancer with flowing, jeweled fabrics, moving hypnotically under a canopy of stars in a desert oasis. The scene is lit by soft lantern light, with palm trees swaying gently and the distant sound of a sitar filling the warm air." \
 "A funky, futuristic techno dancer in a glowing neon suit, moving in robotic precision amidst flashing holograms and floating geometric shapes, set against the backdrop of a neon-lit city skyline." \
 --decay_rate 0.9 --boost_factor 2.0 --boost_threshold 0.3 --guidance_scale 0 --hop_length 377 --note_type "whole"
+
+
+python main.py --song "songs/promisus.mp3" --output "outputs/promisus2.mp4" --alpha 0.9 --distance 0.30 --seed 31451643 \
+--base_prompt \
+"sea grass moving, macro, japanese aesthetic"
+--target_prompts \
+" grass moving with a stone"
+"water pouring in a bucket"
+"tree and a rock
+" disco ball on a beach"
+" chair in sand"
+" a tree in a desert"
+"bedsheet on chair"
+" fire calm"
+"old computer on garagae floor"
+" cigarette"
+"timer on a stove"
+" strange fruit"
+--decay_rate 0.9 --boost_factor 2.0 --boost_threshold 0.3 --guidance_scale 0
+
+python main.py --song "songs/snippets/fishmansGoated.mp3" --output "outputs/v2/goated2.mp4" --alpha 0.9 --distance 0.025 --seed 9472056239 --guidance_scale 0 \
+--decay_rate 0.9 --boost_factor 3.0 --boost_threshold 0.4 --hop_length 377 --note_type "half" \
+--base_prompt \
+"sea grass swaying slowly, barely alive, in a forgotten wind, japanese aesthetic, washed-out watercolor, calm despair in the stillness" \
+--target_prompts \
+"grass bending under the unseen weight of time, japanese aesthetic, ghostly hues, a burden no one notices" \
+"water falling into an endless, empty bucket, ripples fading before they form, japanese aesthetic, soft melancholy, nothing echoes" \
+"a tree and rock, forever locked in silent conversation, japanese aesthetic, faded colors, a dialogue no one hears" \
+"a disco ball spinning slowly under a pale sky, its light lost in the sand, japanese aesthetic, glimmers of a forgotten world" \
+"an empty chair in the sand, facing nothing, japanese aesthetic, muted colors, waiting for something that never arrives" \
+"a lone tree in an infinite desert, its shadow the only movement, japanese aesthetic, watercolor void, endless silence" \
+"bedsheet draped over a forgotten chair, folds like memories, untouched for years, japanese aesthetic, stillness thick with absence" \
+"fire burning without warmth, flickers lost to the night, japanese aesthetic, soft watercolor hues, as if the flames themselves are tired" \
+"an old computer resting in the corner of a garage, screen dark, cables like vines, japanese aesthetic, the slow decay of forgotten days" \
+"a cigarette burned to its end, smoke curling into oblivion, japanese aesthetic, soft lines, the final exhale of silence" \
+"timer ticking softly on a stove that will never cook again, japanese aesthetic, dull tones, counting down to nothing" \
+"a strange fruit, shriveled yet vibrant, sitting in a basket no one has touched, japanese aesthetic, muted and surreal, life on the edge of decay" \
+&& \
+python main.py --song "songs/snippets/fishmansGoated.mp3" --output "outputs/v2/goated3.mp4" --alpha 0.9 --distance 0.025 --seed 9472056239 --guidance_scale 0 \
+--decay_rate 0.9 --boost_factor 3.0 --boost_threshold 0.4 --hop_length 377 --note_type "whole" \
+--base_prompt \
+"sea grass swaying slowly, barely alive, in a forgotten wind, japanese aesthetic, washed-out watercolor, calm despair in the stillness" \
+--target_prompts \
+"grass bending under the unseen weight of time, japanese aesthetic, ghostly hues, a burden no one notices" \
+"water falling into an endless, empty bucket, ripples fading before they form, japanese aesthetic, soft melancholy, nothing echoes" \
+"a tree and rock, forever locked in silent conversation, japanese aesthetic, faded colors, a dialogue no one hears" \
+"a disco ball spinning slowly under a pale sky, its light lost in the sand, japanese aesthetic, glimmers of a forgotten world" \
+"an empty chair in the sand, facing nothing, japanese aesthetic, muted colors, waiting for something that never arrives" \ 
+"a lone tree in an infinite desert, its shadow the only movement, japanese aesthetic, watercolor void, endless silence" \
+"bedsheet draped over a forgotten chair, folds like memories, untouched for years, japanese aesthetic, stillness thick with absence" \
+"fire burning without warmth, flickers lost to the night, japanese aesthetic, soft watercolor hues, as if the flames themselves are tired" \
+"an old computer resting in the corner of a garage, screen dark, cables like vines, japanese aesthetic, the slow decay of forgotten days" \
+"a cigarette burned to its end, smoke curling into oblivion, japanese aesthetic, soft lines, the final exhale of silence" \
+"timer ticking softly on a stove that will never cook again, japanese aesthetic, dull tones, counting down to nothing" \
+"a strange fruit, shriveled yet vibrant, sitting in a basket no one has touched, japanese aesthetic, muted and surreal, life on the edge of decay"\
+
+
+top notes=5..
+
+
+python main.py --song "songs/snippets/fishmansSnip.mp3" --output "outputs/v2/fishmansV2.mp4" --alpha 0.9 --distance 0.025 --seed 9472056239 \
+--hop_length 377 --note_type "half" --sigma 2 \
+--base_prompt \
+"sea grass swaying slowly, barely alive, in a forgotten wind, japanese aesthetic, washed-out watercolor, calm despair in the stillness" \
+--target_prompts \
+"grass bending under the unseen weight of time, japanese aesthetic, ghostly hues, a burden no one notices" \
+"water falling into an endless, empty bucket, ripples fading before they form, japanese aesthetic, soft melancholy, nothing echoes" \
+"a tree and rock, forever locked in silent conversation, japanese aesthetic, faded colors, a dialogue no one hears" \
+"a disco ball spinning slowly under a pale sky, its light lost in the sand, japanese aesthetic, glimmers of a forgotten world" \
+"an empty chair in the sand, facing nothing, japanese aesthetic, muted colors, waiting for something that never arrives" \
+"a lone tree in an infinite desert, its shadow the only movement, japanese aesthetic, watercolor void, endless silence" \
+"bedsheet draped over a forgotten chair, folds like memories, untouched for years, japanese aesthetic, stillness thick with absence" \
+"fire burning without warmth, flickers lost to the night, japanese aesthetic, soft watercolor hues, as if the flames themselves are tired" \
+"an old computer resting in the corner of a garage, screen dark, cables like vines, japanese aesthetic, the slow decay of forgotten days" \
+"a cigarette burned to its end, smoke curling into oblivion, japanese aesthetic, soft lines, the final exhale of silence" \
+"timer ticking softly on a stove that will never cook again, japanese aesthetic, dull tones, counting down to nothing" \
+"a strange fruit, shriveled yet vibrant, sitting in a basket no one has touched, japanese aesthetic, muted and surreal, life on the edge of decay"
+
+python main.py --song "songs/snippets/fishmansSnip.mp3" --output "outputs/v2/fishmansV4.mp4" --alpha 0.8 --distance 0.025 --seed 9472056239 \
+--hop_length 735 --note_type "whole" --sigma 4 --jitter_strength 0.25 \
+--base_prompt \
+"sea grass swaying slowly, barely alive, in a forgotten wind, japanese aesthetic, washed-out watercolor, calm despair in the stillness" \
+--target_prompts \
+"grass bending under the unseen weight of time, japanese aesthetic, ghostly hues, a burden no one notices" \
+"water falling into an endless, empty bucket, ripples fading before they form, japanese aesthetic, soft melancholy, nothing echoes" \
+"a tree and rock, forever locked in silent conversation, japanese aesthetic, faded colors, a dialogue no one hears" \
+"a disco ball spinning slowly under a pale sky, its light lost in the sand, japanese aesthetic, glimmers of a forgotten world" \
+"an empty chair in the sand, facing nothing, japanese aesthetic, muted colors, waiting for something that never arrives" \
+"a lone tree in an infinite desert, its shadow the only movement, japanese aesthetic, watercolor void, endless silence" \
+"bedsheet draped over a forgotten chair, folds like memories, untouched for years, japanese aesthetic, stillness thick with absence" \
+"fire burning without warmth, flickers lost to the night, japanese aesthetic, soft watercolor hues, as if the flames themselves are tired" \
+"an old computer resting in the corner of a garage, screen dark, cables like vines, japanese aesthetic, the slow decay of forgotten days" \
+"a cigarette burned to its end, smoke curling into oblivion, japanese aesthetic, soft lines, the final exhale of silence" \
+"timer ticking softly on a stove that will never cook again, japanese aesthetic, dull tones, counting down to nothing" \
+"a strange fruit, shriveled yet vibrant, sitting in a basket no one has touched, japanese aesthetic, muted and surreal, life on the edge of decay"
+
+python main.py --song "songs/snippets/fishmansSnip.mp3" --output "outputs/v2/fishmansV3Nonharmonic.mp4" --alpha 0.8 --distance 0.025 --seed 9472056239 \
+--hop_length 512 --note_type "half" --sigma 2 --jitter_strength 0.1 \
+--base_prompt \
+"sea grass swaying slowly, barely alive, in a forgotten wind, japanese aesthetic, washed-out watercolor, calm despair in the stillness" \
+--target_prompts \
+"grass bending under the unseen weight of time, japanese aesthetic, ghostly hues, a burden no one notices" \
+"water falling into an endless, empty bucket, ripples fading before they form, japanese aesthetic, soft melancholy, nothing echoes" \
+"a tree and rock, forever locked in silent conversation, japanese aesthetic, faded colors, a dialogue no one hears" \
+"a disco ball spinning slowly under a pale sky, its light lost in the sand, japanese aesthetic, glimmers of a forgotten world" \
+"an empty chair in the sand, facing nothing, japanese aesthetic, muted colors, waiting for something that never arrives" \
+"a lone tree in an infinite desert, its shadow the only movement, japanese aesthetic, watercolor void, endless silence" \
+"bedsheet draped over a forgotten chair, folds like memories, untouched for years, japanese aesthetic, stillness thick with absence" \
+"fire burning without warmth, flickers lost to the night, japanese aesthetic, soft watercolor hues, as if the flames themselves are tired" \
+"an old computer resting in the corner of a garage, screen dark, cables like vines, japanese aesthetic, the slow decay of forgotten days" \
+"a cigarette burned to its end, smoke curling into oblivion, japanese aesthetic, soft lines, the final exhale of silence" \
+"timer ticking softly on a stove that will never cook again, japanese aesthetic, dull tones, counting down to nothing" \
+"a strange fruit, shriveled yet vibrant, sitting in a basket no one has touched, japanese aesthetic, muted and surreal, life on the edge of decay"
+
+python main.py --song "songs/snippets/fishmansSnip.mp3" --output "outputs/v2/fishmansV3HarmonicNoAbs.mp4" --alpha 0.8 --distance 0.025 --seed 9472056239 \
+--hop_length 512 --note_type "half" --sigma 2 --jitter_strength 0.1 \
+--base_prompt \
+"sea grass swaying slowly, barely alive, in a forgotten wind, japanese aesthetic, washed-out watercolor, calm despair in the stillness" \
+--target_prompts \
+"grass bending under the unseen weight of time, japanese aesthetic, ghostly hues, a burden no one notices" \
+"water falling into an endless, empty bucket, ripples fading before they form, japanese aesthetic, soft melancholy, nothing echoes" \
+"a tree and rock, forever locked in silent conversation, japanese aesthetic, faded colors, a dialogue no one hears" \
+"a disco ball spinning slowly under a pale sky, its light lost in the sand, japanese aesthetic, glimmers of a forgotten world" \
+"an empty chair in the sand, facing nothing, japanese aesthetic, muted colors, waiting for something that never arrives" \
+"a lone tree in an infinite desert, its shadow the only movement, japanese aesthetic, watercolor void, endless silence" \
+"bedsheet draped over a forgotten chair, folds like memories, untouched for years, japanese aesthetic, stillness thick with absence" \
+"fire burning without warmth, flickers lost to the night, japanese aesthetic, soft watercolor hues, as if the flames themselves are tired" \
+"an old computer resting in the corner of a garage, screen dark, cables like vines, japanese aesthetic, the slow decay of forgotten days" \
+"a cigarette burned to its end, smoke curling into oblivion, japanese aesthetic, soft lines, the final exhale of silence" \
+"timer ticking softly on a stove that will never cook again, japanese aesthetic, dull tones, counting down to nothing" \
+"a strange fruit, shriveled yet vibrant, sitting in a basket no one has touched, japanese aesthetic, muted and surreal, life on the edge of decay"
+
+python main.py --song "songs/untangle.mp3" --output "outputs/v2/untangle.mp4" --alpha 0.9 --distance 0.025 --seed 9472056239 \
+--hop_length 377 --note_type "quarter" --sigma 6 --jitter_strength 0.1 \
+--base_prompt \
+"sea grass swaying slowly, barely alive, in a forgotten wind, japanese aesthetic, washed-out watercolor, calm despair in the stillness" \
+--target_prompts \
+"grass bending under the unseen weight of time, japanese aesthetic, ghostly hues, a burden no one notices" \
+"water falling into an endless, empty bucket, ripples fading before they form, japanese aesthetic, soft melancholy, nothing echoes" \
+"a tree and rock, forever locked in silent conversation, japanese aesthetic, faded colors, a dialogue no one hears" \
+"a disco ball spinning slowly under a pale sky, its light lost in the sand, japanese aesthetic, glimmers of a forgotten world" \
+"an empty chair in the sand, facing nothing, japanese aesthetic, muted colors, waiting for something that never arrives" \
+"a lone tree in an infinite desert, its shadow the only movement, japanese aesthetic, watercolor void, endless silence" \
+"bedsheet draped over a forgotten chair, folds like memories, untouched for years, japanese aesthetic, stillness thick with absence" \
+"fire burning without warmth, flickers lost to the night, japanese aesthetic, soft watercolor hues, as if the flames themselves are tired" \
+"an old computer resting in the corner of a garage, screen dark, cables like vines, japanese aesthetic, the slow decay of forgotten days" \
+"a cigarette burned to its end, smoke curling into oblivion, japanese aesthetic, soft lines, the final exhale of silence" \
+"timer ticking softly on a stove that will never cook again, japanese aesthetic, dull tones, counting down to nothing" \
+"a strange fruit, shriveled yet vibrant, sitting in a basket no one has touched, japanese aesthetic, muted and surreal, life on the edge of decay"
