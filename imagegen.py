@@ -54,6 +54,7 @@ class NoiseVisualizer:
         chroma_cq_delta = librosa.feature.delta(self.chroma_cq, order=1)
         chroma_cq_delta_abs = np.abs(chroma_cq_delta)
 
+        self.top_chromaOnset = np.argmax(chroma_cq_delta, axis=0)
         # Get indices of the top N chromas with the largest deltas at each frame
         self.top_chromas = np.argsort(-chroma_cq_delta_abs, axis=0)[:number_of_chromas, :]  # shape: (number_of_chromas, numFrames)
 
@@ -240,7 +241,7 @@ class NoiseVisualizer:
 
         # Onset frames and dominant chromas
         onset_frames = self.onset_bt
-        dominant_chromas = self.chroma_cq_delta[self.onset_bt]
+        dominant_chromas = self.top_chromaOnset[self.onset_bt]
 
         # Initialize alphas and dominant chroma per frame
         alphas = np.zeros(numFrames)
