@@ -11,3 +11,5 @@ tokenizers
 transformers
 accelerate
 peft
+moviepy
+librosa

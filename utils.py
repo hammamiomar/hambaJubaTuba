@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 import moviepy.editor as mpy
+import os
 import math
 
 def LatentInitCircular(steps, distance, weightType=torch.float16): # only circular walk for now..
@@ -36,4 +37,4 @@ def create_mp4_from_pil_images(image_array, output_path, song, fps):
     video = video.set_audio(mpy.AudioFileClip(song, fps=44100))
     # Write the result to a file
     video.write_videofile(output_path, fps=fps, audio_codec='aac')
-    
+
