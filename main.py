@@ -15,12 +15,12 @@ dtype_map = {
 }
 
 def main(song, output_path, device, weightType, seed, hop_length, distance, base_prompt, target_prompts, alpha, 
-         noteType, sigma_time, sigma_chroma, jitter_strength, number_of_chromas, spiral_rate, embed_type):
+         noteType, sigma_time, sigma_chroma, jitter_strength, number_of_chromas, embed_type,number_of_chromas_focus, bpm):
     
     visualizer = NoiseVisualizer(device=device, weightType=weightType, seed=seed)
 
     start_time = time.time()  # Start total timing
-    visualizer.loadSong(song, hop_length=hop_length, number_of_chromas=number_of_chromas)
+    visualizer.loadSong(song, hop_length=hop_length, number_of_chromas=number_of_chromas, bpm=bpm)
     print(f"Loaded song in {time.time() - start_time:.2f} seconds.")
 
     step_time = time.time()  # Start timing for each step
@@ -43,7 +43,8 @@ def main(song, output_path, device, weightType, seed, hop_length, distance, base
                                                 targetPromptChromaScale=target_prompts, 
                                                 alpha=alpha,
                                                 sigma_time=sigma_time,
-                                                sigma_chroma=sigma_chroma)
+                                                sigma_chroma=sigma_chroma,
+                                                number_of_chromas_focus=number_of_chromas_focus)
     
     
     print(f"Got prompt embeds in {time.time() - step_time:.2f} seconds.")
@@ -90,9 +91,10 @@ if __name__ == "__main__":
     parser.add_argument("--sigma_chroma", type=float, default=1, help="Sigma value for prompt interpolation.")
     parser.add_argument("--note_type", type=str, default="quarter",help="whole, half, or quarter" )
     parser.add_argument("--jitter_strength", type=float, default=0.1, help="Jitter strength for latent interpolation")
-    parser.add_argument("--number_of_chromas", type=int, default=4)
-    parser.add_argument("--spiral_rate", type=float, default=0.1, help="Jitter strength for latent interpolation")
+    parser.add_argument("--number_of_chromas", type=int, default=12)
+    parser.add_argument("--number_of_chromas_focus", type=int, default=6)
     parser.add_argument("--embed_type", type=str, default="focus")
+    parser.add_argument("--bpm", type=int, default=None)
 
     
 
@@ -113,5 +115,6 @@ if __name__ == "__main__":
          sigma_chroma = args.sigma_chroma,
          jitter_strength = args.jitter_strength,
          number_of_chromas = args.number_of_chromas,
-         spiral_rate=args.spiral_rate,
-         embed_type = args.embed_type)
+         number_of_chromas_focus = args.number_of_chromas_focus,
+         embed_type = args.embed_type,
+         bpm=args.bpm)

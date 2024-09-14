@@ -24,39 +24,40 @@ class NoiseVisualizer:
         self.textEncoder = self.pipe.text_encoder
         self.tokenizer = self.pipe.tokenizer
     
-    def loadSong(self,file,hop_length, number_of_chromas):
+    def loadSong(self,file,hop_length, number_of_chromas, bpm=None):
         y, sr = librosa.load(file) # 3 min 52 sec
         self.hop_length=hop_length
         self.sr = sr
         self.y = y
         
         y_harmonic, y_percussive = librosa.effects.hpss(y)
-        
+        oenv = librosa.onset.onset_strength(y=y, sr=sr, hop_length=self.hop_length)
+
         # Latent generaton
-        
-        self.beat, self.beat_frames = librosa.beat.beat_track(y=y_percussive, sr=sr,hop_length=self.hop_length)
+        if bpm:
+            self.tempo, self.beat_frames = librosa.beat.beat_track(y=oenv, sr=sr, hop_length=self.hop_length,bpm=bpm)
+        else:
+            self.tempo, self.beat_frames = librosa.beat.beat_track(y=oenv, sr=sr, hop_length=self.hop_length)
         
         melSpec = librosa.feature.melspectrogram(y=y_percussive,sr=sr, n_mels = 256, hop_length=self.hop_length)
         self.melSpec = np.sum(melSpec,axis=0)
         
         
         # Prompt Generation
-        self.chroma_cq = librosa.feature.chroma_cqt(y=y_harmonic, sr=sr, hop_length=self.hop_length)
+        self.chroma_cq = librosa.feature.chroma_cqt(y=y_harmonic, sr=sr, hop_length=self.hop_length, n_chroma=number_of_chromas)
         
         # Onset Detection
-        oenv = librosa.onset.onset_strength(y=y, sr=sr, hop_length=self.hop_length)
         onset_raw = librosa.onset.onset_detect(
             onset_envelope=oenv, backtrack=False, hop_length=self.hop_length
         )
         self.onset_bt = librosa.onset.onset_backtrack(onset_raw, oenv) # shape: (num_frames)
 
         # Chroma Delta Computation
-        chroma_cq_delta = librosa.feature.delta(self.chroma_cq, order=1)
-        chroma_cq_delta_abs = np.abs(chroma_cq_delta)
+        self.chroma_cq_delta = librosa.feature.delta(self.chroma_cq, order=1)
+      
 
-        self.top_chromaOnset = np.argmax(chroma_cq_delta, axis=0)
+        
         # Get indices of the top N chromas with the largest deltas at each frame
-        self.top_chromas = np.argsort(-chroma_cq_delta_abs, axis=0)[:number_of_chromas, :]  # shape: (number_of_chromas, numFrames)
 
         self.steps = self.melSpec.shape[0]
         self.number_of_chromas = number_of_chromas  # Store for use in getPromptEmbeds
@@ -108,7 +109,7 @@ class NoiseVisualizer:
         
         # # Optionally add some jitter to the angles to add randomness
         jitter = torch.randn_like(angles) * jitter_strength
-        #angles += jitter
+        angles += jitter
         
         # Compute cos and sin of the angles
         walkScaleX = torch.cos(angles)
@@ -187,9 +188,10 @@ class NoiseVisualizer:
         chroma = self.chroma_cq.T  # shape: (numFrames, 12)
         numFrames = chroma.shape[0]
 
+        top_chromaOnset = np.argmax(self.chroma_cq_delta, axis=0)
         # Onset frames and dominant chromas
         onset_frames = self.onset_bt
-        dominant_chromas = self.top_chromaOnset[self.onset_bt]
+        dominant_chromas = top_chromaOnset[self.onset_bt]
 
         # Initialize alphas and dominant chroma per frame
         alphas = np.zeros(numFrames)
@@ -286,7 +288,7 @@ class NoiseVisualizer:
         return interpolatedEmbeds
         
         
-    def getPromptEmbedsCum(self, basePrompt, targetPromptChromaScale, alpha=0.5, sigma_time=2, sigma_chroma=1):
+    def getPromptEmbedsCum(self, basePrompt, targetPromptChromaScale, alpha=0.5, sigma_time=2, sigma_chroma=1, number_of_chromas_focus=6):
         """
         Generates interpolated embeddings with multivariate smoothing applied to alpha values.
 
@@ -303,11 +305,15 @@ class NoiseVisualizer:
         # Transpose chroma to shape: (numFrames, 12)
         chroma = self.chroma_cq.T  # shape: (numFrames, 12)
         numFrames = chroma.shape[0]
-        number_of_chromas = self.number_of_chromas  # Retrieve the number of chromas to consider
+        number_of_chromas = number_of_chromas_focus # Retrieve the number of chromas to consider
+        
+        chroma_cq_delta_abs = np.abs(self.chroma_cq_delta)
+        top_chromas = np.argsort(-chroma_cq_delta_abs, axis=0)[:number_of_chromas, :]  # shape: (number_of_chromas, numFrames)
 
+        
         # Onset frames and top N chromas at onsets
         onset_frames = self.onset_bt
-        top_chromas_at_onsets = self.top_chromas[:, self.onset_bt]  # shape: (number_of_chromas, len(onset_bt))
+        top_chromas_at_onsets = top_chromas[:, self.onset_bt]  # shape: (number_of_chromas, len(onset_bt))
 
         # Initialize alphas and chroma indices per frame
         alphas = np.zeros((numFrames, number_of_chromas))
@@ -406,101 +412,6 @@ class NoiseVisualizer:
         interpolatedEmbeds = torch.stack(interpolatedEmbedsAll)  # shape: (numFrames, seq_len, hidden_size)
 
         return interpolatedEmbeds
-    # def getPromptEmbedsCum(self, basePrompt, targetPromptChromaScale, alpha=0.5, sigma_time=2, sigma_chroma=1):
-    #     chroma = self.chroma_cq.T  # shape: (numFrames, 12)
-    #     numFrames = chroma.shape[0]
-    #     number_of_chromas = self.number_of_chromas  # Retrieve the number of chromas to consider
-
-    #     # Onset frames and top N chromas at onsets
-    #     onset_frames = self.onset_bt
-    #     top_chromas_at_onsets = self.top_chromas[:, self.onset_bt]  # shape: (number_of_chromas, len(onset_bt))
-
-    #     # Initialize alphas and chroma indices per frame
-    #     alphas = np.zeros((numFrames, number_of_chromas))
-    #     chromas_per_frame = np.full((numFrames, number_of_chromas), -1, dtype=int)
-
-    #     # For each onset interval
-    #     for i in range(len(onset_frames) - 1):
-    #         start_frame = onset_frames[i]
-    #         end_frame = onset_frames[i + 1]
-    #         chroma_indices = top_chromas_at_onsets[:, i]  # shape: (number_of_chromas,)
-
-    #         if start_frame == end_frame:
-    #             end_frame += 1
-
-    #         # Extract chroma magnitudes of the selected chromas in this interval
-    #         chroma_magnitudes = chroma[start_frame:end_frame, chroma_indices]  # shape: (interval_length, number_of_chromas)
-
-    #         # Normalize chroma magnitudes per frame to sum to alpha
-    #         magnitudes_sum = chroma_magnitudes.sum(axis=1, keepdims=True) + 1e-8  # Avoid division by zero
-    #         alpha_values = (chroma_magnitudes / magnitudes_sum) * alpha  # shape: (interval_length, number_of_chromas)
-
-    #         # Assign alpha_values and chroma indices to frames
-    #         alphas[start_frame:end_frame, :] = alpha_values
-    #         chromas_per_frame[start_frame:end_frame, :] = chroma_indices.reshape(1, number_of_chromas)
-
-    #     # Handle frames after the last onset
-    #     start_frame = onset_frames[-1]
-    #     chroma_indices = top_chromas_at_onsets[:, -1]  # shape: (number_of_chromas,)
-    #     end_frame = numFrames
-
-    #     chroma_magnitudes = chroma[start_frame:end_frame, chroma_indices]  # shape: (interval_length, number_of_chromas)
-    #     magnitudes_sum = chroma_magnitudes.sum(axis=1, keepdims=True) + 1e-8
-    #     alpha_values = (chroma_magnitudes / magnitudes_sum) * alpha
-
-    #     alphas[start_frame:end_frame, :] = alpha_values
-    #     chromas_per_frame[start_frame:end_frame, :] = chroma_indices.reshape(1, number_of_chromas)
-
-    #     # Apply temporal smoothing to alphas (optional)
-    #     for n in range(number_of_chromas):
-    #         alphas[:, n] = gaussian_filter1d(alphas[:, n], sigma=sigma)
-
-    #     # Get baseEmbeds and targetEmbeds
-    #     baseInput = self.tokenizer(
-    #         basePrompt,
-    #         return_tensors="pt",
-    #         padding="max_length",
-    #         truncation=True,
-    #         max_length=77,
-    #     ).input_ids
-    #     baseEmbeds = self.textEncoder(baseInput)[0].squeeze(0)  # shape: (seq_len, hidden_size)
-
-    #     targetInputs = self.tokenizer(
-    #         targetPromptChromaScale,
-    #         return_tensors="pt",
-    #         padding="max_length",
-    #         truncation=True,
-    #         max_length=77,
-    #     ).input_ids
-    #     targetEmbeds = self.textEncoder(targetInputs)[0]  # shape: (12, seq_len, hidden_size)
-
-    #     # Initialize interpolatedEmbedsAll
-    #     interpolatedEmbedsAll = []
-
-    #     # For each frame
-    #     for frame in range(numFrames):
-    #         alpha_values = alphas[frame, :]  # shape: (number_of_chromas,)
-    #         total_alpha = alpha_values.sum()
-    #         if total_alpha > alpha:
-    #             alpha_values = (alpha_values / total_alpha) * alpha
-    #             total_alpha = alpha
-
-    #         base_alpha = 1.0 - total_alpha
-    #         chroma_indices = chromas_per_frame[frame, :]  # shape: (number_of_chromas,)
-
-    #         # Start with baseEmbeds multiplied by base_alpha
-    #         interpolatedEmbed = base_alpha * baseEmbeds
-
-    #         # Add contributions from each target chroma
-    #         for n in range(number_of_chromas):
-    #             target_embed = targetEmbeds[chroma_indices[n]]  # shape: (seq_len, hidden_size)
-    #             interpolatedEmbed += alpha_values[n] * target_embed
-
-    #         interpolatedEmbedsAll.append(interpolatedEmbed.unsqueeze(0))  # shape: (1, seq_len, hidden_size)
-
-    #     interpolatedEmbeds = torch.stack(interpolatedEmbedsAll)  # shape: (numFrames, seq_len, hidden_size)
-
-    #     return interpolatedEmbeds
     
     def getVisuals(self, latents, promptEmbeds, num_inference_steps=1, batch_size=1):
         #self.pipe.vae = self.vae
