@@ -55,13 +55,7 @@ def create_mp4_from_pil_images(image_array, output_path, song, fps, device='cpu'
     
     if device == "cuda":
         ffmpeg_path = '/usr/bin/ffmpeg'  # Example path
-
-        # Verify that the path is correct
-        if not os.path.isfile(ffmpeg_path):
-                raise FileNotFoundError(f"ffmpeg not found at {ffmpeg_path}")
-
-        # Set the ffmpeg binary path in moviepy's config
-        mpy.config.change_settings({"FFMPEG_BINARY": ffmpeg_path})
+        os.environ["IMAGEIO_FFMPEG_EXE"] = "/usr/bin/ffmpeg"
 
 
     # Convert PIL images to MoviePy ImageClips
