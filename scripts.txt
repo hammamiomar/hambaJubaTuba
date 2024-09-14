@@ -405,8 +405,25 @@ python main.py --song "inputs/untangle.mp3" --output "outputs/untangleNoCumRando
 
 
 
-python main.py --song "inputs/anchi.mp3" --output "outputs/anchi.mp4" --alpha 0.9 --distance 0.025 \--seed 9472056239 \
+python main.py --song "inputs/anchi.mp3" --output "outputs/anchi.mp4" --alpha 0.75 --distance 0.025 \--seed 9472056239 \
 --hop_length 368 --note_type "half" --sigma_time 3 --spiral_rate 0.1 --device "cuda" --weightType "float32" --embed_type "focus" \
+--base_prompt \
+"solemn steps on endless dunes, lost in the silent desert, japanese aesthetic, muted watercolor tones, quiet melancholy in the vast emptiness" \
+--target_prompts \
+"footprints fading in shifting sands, japanese aesthetic, subtle hues, traces of a lonely journey" \
+"a solitary cactus standing against the horizon, japanese aesthetic, soft shadows, resilience in solitude" \
+"the sun setting over an empty expanse, japanese aesthetic, gradient sky, the day's last sigh" \
+"a mirage shimmering on the distant dunes, japanese aesthetic, ethereal colors, illusions of companionship" \
+"a lone traveler with a weathered cloak, japanese aesthetic, subdued palette, bearing the weight of silence" \
+"stars emerging in the clear night sky, japanese aesthetic, delicate twinkles, eternal watchfulness" \
+"a tumbleweed drifting aimlessly, japanese aesthetic, muted movement, the wind's quiet whisper" \
+"desert rocks casting long shadows, japanese aesthetic, soft contours, timeless guardians of the sand" \
+"a dried oasis with cracked earth, japanese aesthetic, pale tones, memories of life lost" \
+"the crescent moon reflecting on the sand, japanese aesthetic, gentle light, nocturnal serenity" \
+"a solitary cactus bloom under moonlight, japanese aesthetic, subtle glow, fragile beauty in isolation" \
+"horizon where sand meets sky, japanese aesthetic, seamless blending, infinity in stillness" && \
+python main.py --song "inputs/anchi.mp3" --output "outputs/anchi2.mp4" --alpha 0.75 --distance 0.025 \--seed 9472056239 \
+--hop_length 368 --note_type "half" --sigma_time 3 --sigma_chroma 2 --number_of_chromas 6 --spiral_rate 0.1 --device "cuda" --weightType "float32" --embed_type "mix" \
 --base_prompt \
 "solemn steps on endless dunes, lost in the silent desert, japanese aesthetic, muted watercolor tones, quiet melancholy in the vast emptiness" \
 --target_prompts \

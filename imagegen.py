@@ -108,7 +108,7 @@ class NoiseVisualizer:
         
         # # Optionally add some jitter to the angles to add randomness
         jitter = torch.randn_like(angles) * jitter_strength
-        angles += jitter
+        #angles += jitter
         
         # Compute cos and sin of the angles
         walkScaleX = torch.cos(angles)
