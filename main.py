@@ -15,7 +15,7 @@ dtype_map = {
 }
 
 def main(song, output_path, device, weightType, seed, hop_length, distance, base_prompt, target_prompts, alpha, 
-         noteType, sigma_time, sigma_chroma, jitter_strength, number_of_chromas):
+         noteType, sigma_time, sigma_chroma, jitter_strength, number_of_chromas, spiral_rate, embed_type):
     
     visualizer = NoiseVisualizer(device=device, weightType=weightType, seed=seed)
 
@@ -26,23 +26,26 @@ def main(song, output_path, device, weightType, seed, hop_length, distance, base
     step_time = time.time()  # Start timing for each step
     print("Getting beat latents")
     #latents = visualizer.getBeatLatents(distance=distance, noteType=noteType, jitter_strength=jitter_strength)
-    latents = visualizer.getBeatLatentsRandom(max_step_size=distance, noteType=noteType, jitter_strength=jitter_strength)
+    latents = visualizer.getBeatLatentsSpiral(distance=distance, noteType=noteType, spiral_rate=spiral_rate)
     print(f"Got beat latents in {time.time() - step_time:.2f} seconds.")
     
     fps = visualizer.getFPS()
 
     step_time = time.time()  # Reset step timing
     print("Getting prompt embeds")
-    # prompt_embeds = visualizer.getPromptEmbedsCum(basePrompt=base_prompt, 
-    #                                            targetPromptChromaScale=target_prompts, 
-    #                                            alpha=alpha,
-    #                                            sigma_time=sigma_time,
-    #                                            sigma_chroma=sigma_chroma)
-    
-    prompt_embeds = visualizer.getPromptEmbedsOnsetFocus(basePrompt=base_prompt, 
+    if embed_type == "focus":
+        prompt_embeds = visualizer.getPromptEmbedsOnsetFocus(basePrompt=base_prompt, 
                                                targetPromptChromaScale=target_prompts, 
                                                alpha=alpha,
                                                sigma=sigma_time)
+    else:
+        prompt_embeds = visualizer.getPromptEmbedsCum(basePrompt=base_prompt, 
+                                                targetPromptChromaScale=target_prompts, 
+                                                alpha=alpha,
+                                                sigma_time=sigma_time,
+                                                sigma_chroma=sigma_chroma)
+    
+    
     print(f"Got prompt embeds in {time.time() - step_time:.2f} seconds.")
 
     step_time = time.time()  # Reset step timing
@@ -54,8 +57,7 @@ def main(song, output_path, device, weightType, seed, hop_length, distance, base
     create_mp4_from_pil_images(image_array=images, 
                                output_path=output_path, 
                                song=song, 
-                               fps=fps,
-                               device=device)
+                               fps=fps)
     print(f"Created MP4 in {time.time() - step_time:.2f} seconds.")
     
     print(f"Total execution time: {time.time() - start_time:.2f} seconds.")
@@ -89,6 +91,9 @@ if __name__ == "__main__":
     parser.add_argument("--note_type", type=str, default="quarter",help="whole, half, or quarter" )
     parser.add_argument("--jitter_strength", type=float, default=0.1, help="Jitter strength for latent interpolation")
     parser.add_argument("--number_of_chromas", type=int, default=4)
+    parser.add_argument("--spiral_rate", type=float, default=0.1, help="Jitter strength for latent interpolation")
+    parser.add_argument("--embed_type", type=str, default="focus")
+
     
 
     args = parser.parse_args()
@@ -107,4 +112,6 @@ if __name__ == "__main__":
          sigma_time = args.sigma_time,
          sigma_chroma = args.sigma_chroma,
          jitter_strength = args.jitter_strength,
-         number_of_chromas = args.number_of_chromas)
+         number_of_chromas = args.number_of_chromas,
+         spiral_rate=args.spira_rate,
+         embed_type = args.embed_type)

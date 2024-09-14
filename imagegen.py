@@ -61,39 +61,9 @@ class NoiseVisualizer:
         self.steps = self.melSpec.shape[0]
         self.number_of_chromas = number_of_chromas  # Store for use in getPromptEmbeds
         
-    # def getEasedBeats(self, noteType):
-    #     def cubic_in_out_numpy(t):
-    #         return np.where(t < 0.5, 4 * t**3, 1 - (-2 * t + 2)**3 / 2)
-
-    #     if noteType == "half":
-    #         beat_frames = self.beat_frames[::2]
-    #     elif noteType == "whole":
-    #         beat_frames = self.beat_frames[::4]
-    #     else:
-    #         beat_frames = self.beat_frames
-            
-    #     # Initialize output array
-    #     output_array = np.zeros(self.steps, float)
-
-    #     # Normalize the mel spectrogram values at the beat frames and set them in the output array
-    #     output_array[beat_frames] = librosa.util.normalize(self.melSpec[beat_frames])
-
-    #     # Interpolate between the beat frames
-    #     last_beat_idx = None
-    #     for current_idx in beat_frames:
-    #         if last_beat_idx is not None:
-    #             # Interpolate between the previous beat and current beat
-    #             for j in range(last_beat_idx + 1, current_idx):
-    #                 t = (j - last_beat_idx) / (current_idx - last_beat_idx)
-    #                 eased_value = cubic_in_out_numpy(np.array(t))
-    #                 output_array[j] = eased_value
-    #         last_beat_idx = current_idx
-
-    #     return torch.tensor(output_array, dtype=self.weightType)
-    
-    def getEasedBeats(self, noteType):
-        def cubic_in_out(t):
-            return 4 * t**3 if t < 0.5 else 1 - (-2 * t + 2)**3 / 2
+    def getEasedBeats(self, noteType):  # for circle..
+        def cubic_in_out_numpy(t):
+            return np.where(t < 0.5, 4 * t**3, 1 - (-2 * t + 2)**3 / 2)
 
         if noteType == "half":
             beat_frames = self.beat_frames[::2]
@@ -101,80 +71,25 @@ class NoiseVisualizer:
             beat_frames = self.beat_frames[::4]
         else:
             beat_frames = self.beat_frames
-
+            
         # Initialize output array
         output_array = np.zeros(self.steps, float)
 
-        # Get melSpec values at beat frames and normalize
-        beat_strengths = librosa.util.normalize(self.melSpec[beat_frames])
-
-        # Set the beat strengths in the output array
-        output_array[beat_frames] = beat_strengths
+        # Normalize the mel spectrogram values at the beat frames and set them in the output array
+        output_array[beat_frames] = librosa.util.normalize(self.melSpec[beat_frames])
 
         # Interpolate between the beat frames
         last_beat_idx = None
-        last_strength = 0
-        for idx, current_idx in enumerate(beat_frames):
-            current_strength = beat_strengths[idx]
+        for current_idx in beat_frames:
             if last_beat_idx is not None:
-                duration = current_idx - last_beat_idx
-                for j in range(1, duration):
-                    t = j / duration
-                    eased_value = cubic_in_out(t)
-                    # Interpolate beat strength
-                    strength = (1 - t) * last_strength + t * current_strength
-                    output_array[last_beat_idx + j] = eased_value * strength
+                # Interpolate between the previous beat and current beat
+                for j in range(last_beat_idx + 1, current_idx):
+                    t = (j - last_beat_idx) / (current_idx - last_beat_idx)
+                    eased_value = cubic_in_out_numpy(np.array(t))
+                    output_array[j] = eased_value
             last_beat_idx = current_idx
-            last_strength = current_strength
 
         return torch.tensor(output_array, dtype=self.weightType)
-    
-    def getBeatLatentsRandom(self, max_step_size, noteType, jitter_strength):
-        # shape: (batch_size, channels, height, width)
-        shape = (1, 4, 64, 64)
-        num_steps = self.steps
-
-        # Initialize the latent tensor
-        latents = torch.zeros((num_steps, *shape[1:]), dtype=self.weightType, device=self.device)
-
-        # Initialize random direction
-        current_direction = torch.randn(shape, dtype=self.weightType, device=self.device)
-        current_direction = current_direction / current_direction.norm()
-
-        # Get the eased beat values (which include beat strength)
-        easing_values = self.getEasedBeats(noteType=noteType).to(self.device)
-
-        # Get beat frames
-        if noteType == "half":
-            beat_frames = self.beat_frames[::2]
-        elif noteType == "whole":
-            beat_frames = self.beat_frames[::4]
-        else:
-            beat_frames = self.beat_frames
-
-        # Create a set for quick lookup
-        beat_frames_set = set(beat_frames)
-
-        for i in range(num_steps):
-            beat_strength = easing_values[i].item()  # Value between 0 and alpha_max
-
-            # At beats, change direction based on jitter_strength and beat strength
-            if i in beat_frames_set:
-                new_direction = torch.randn(shape, dtype=self.weightType, device=self.device)
-                new_direction = new_direction / new_direction.norm()
-                # Blend the new direction with the current one, weighted by beat strength
-                blend_factor = beat_strength * jitter_strength
-                current_direction = (1 - blend_factor) * current_direction + blend_factor * new_direction
-                current_direction = current_direction / current_direction.norm()
-
-            # Step size proportional to beat strength
-            step_size = max_step_size * beat_strength
-
-            # Update latent
-            step = step_size * current_direction
-            latents[i] = latents[i - 1] + step if i > 0 else step
-
-        return latents
     def getBeatLatentsCircle(self, distance, noteType, jitter_strength): 
         # shape: (batch, latent channels, height, width)
         shape = (1, 4, 64, 64)
@@ -210,9 +125,42 @@ class NoiseVisualizer:
         # Add the noise contributions for X and Y to create the latent walk
         latents = noiseX + noiseY  # Shape: (steps, 4, 64, 64)
         return latents
+    
+    def getBeatLatentsSpiral(self, distance, noteType, spiral_rate): 
+        # shape: (batch, latent channels, height, width)
+        shape = (1, 4, 64, 64)
+        
+        # Initialize random noise for X and Y coordinates of the walk
+        walkNoiseX = torch.randn(shape, dtype=self.weightType, device=self.device)
+        walkNoiseY = torch.randn(shape, dtype=self.weightType, device=self.device)
+        
+        # Apply the easing values to the scales (mapping easing values to noise)
+        easing_values = self.getEasedBeats(noteType=noteType).to(self.device)
+        
+        # Compute cumulative sum of easing values to get the angle
+        # Adjust the scaling factor to control speed of rotation
+        scaling_factor = distance * 2 * math.pi  # Multiply by 2π for full rotations
+        radii = easing_values * scaling_factor + spiral_rate * torch.arange(len(easing_values)).to(self.device)
+        angles = torch.cumsum(easing_values, dim=0) * scaling_factor
+        
+        # Compute cos and sin of the angles
+        walkScaleX = radii * torch.cos(angles)
+        walkScaleY = radii * torch.sin(angles)
+        
+        # Expand walkScaleX and walkScaleY to match dimensions for multiplication
+        walkScaleX = walkScaleX.view(-1, 1, 1, 1)
+        walkScaleY = walkScaleY.view(-1, 1, 1, 1)
+        
+        # Generate the noise tensors based on the interpolated scales
+        noiseX = walkScaleX * walkNoiseX
+        noiseY = walkScaleY * walkNoiseY
+        
+        # Add the noise contributions for X and Y to create the latent walk
+        latents = noiseX + noiseY  # Shape: (steps, 4, 64, 64)
+        return latents
 
     def getFPS(self):
-        return self.sr / self.hop_length
+        return round(self.sr / self.hop_length)
     
     def slerp(self, embed1, embed2, alpha):
         # Normalize embeddings
