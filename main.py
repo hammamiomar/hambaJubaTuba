@@ -113,5 +113,5 @@ if __name__ == "__main__":
          sigma_chroma = args.sigma_chroma,
          jitter_strength = args.jitter_strength,
          number_of_chromas = args.number_of_chromas,
-         spiral_rate=args.spira_rate,
+         spiral_rate=args.spiral_rate,
          embed_type = args.embed_type)
