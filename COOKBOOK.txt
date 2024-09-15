@@ -1,0 +1,20 @@
+python main.py --song "songs/bendecida.mp3" --output "outputs/bendecidaquartyerBPMFix.mp4" --alpha 0.75 --distance 0.05 \--seed 9472056239 \
+--hop_length 368 --note_type "quarter" --sigma_time 2 --sigma_chroma 2 --device "mps" --weightType "float16" --embed_type "cum" \
+--number_of_chromas 12 --number_of_chromas_focus 4 --jitter_strength 0.1 \
+--base_prompt \
+"dark, dirty tunnel illuminated by eerie, ghostly light, calm watercolor aesthetic, unsettling stillness, shadows dancing with secrets" \
+--target_prompts \
+"a pool of stagnant water with floating debris, japanese aesthetic, soft watercolor tones, mysterious depths inviting exploration" \
+"twisted vines creeping along the tunnel walls, japanese aesthetic, gentle shadows, nature reclaiming the forgotten passage" \
+"a lone, tattered coat draped over a broken hook, japanese aesthetic, faded colors, remnants of past wanderers stirring curiosity" \
+"an ancient, cobweb-covered chandelier swaying gently, its dim light flickering like forgotten memories" \
+"a cracked, ornate mirror reflecting fragmented, distorted realities, inviting deeper exploration" \
+"tattered curtains hanging from broken windows, fluttering softly despite the still air" \
+"moss-covered statues standing sentinel in the shadows, their eyes seeming to follow every movement" \
+"dripping water pooling on the cold, grimy floor, creating ripples that distort the surrounding darkness" \
+"a solitary, flickering bulb casting long, ominous shadows against the tunnel walls" \
+"rusty, abandoned tools scattered haphazardly, telling stories of past labor and neglect" \
+"vine-like tendrils creeping along the tunnel ceiling, slowly reclaiming the space" \
+"faint, ghostly silhouettes moving silently in the distance, hinting at unseen presences" \
+
+#try with no jitter!

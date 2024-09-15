@@ -442,7 +442,7 @@ python main.py --song "inputs/anchi.mp3" --output "outputs/anchi2.mp4" --alpha 0
 
 
 
-python main.py --song "songs/bendecida.mp3" --output "outputs/bendecidaquartyerBPMFix.mp4" --alpha 0.75 --distance 0.05 \--seed 9472056239 \
+python main.py --song "songs/bendecida.mp3" --output "outputs/bendecidaquartyerBPMFixNoJitter.mp4" --alpha 0.75 --distance 0.05 \--seed 9472056239 \
 --hop_length 368 --note_type "quarter" --sigma_time 2 --sigma_chroma 2 --device "mps" --weightType "float16" --embed_type "cum" \
 --number_of_chromas 12 --number_of_chromas_focus 4 \
 --base_prompt \
