@@ -18,3 +18,26 @@ python main.py --song "songs/bendecida.mp3" --output "outputs/bendecidaquartyerB
 "faint, ghostly silhouettes moving silently in the distance, hinting at unseen presences" \
 
 #try with no jitter!
+
+
+python main.py --song "inputs/GREEN.mp3" --output "outputs/green.mp4" --alpha 0.75 --distance 0.05 \--seed 9472056239 \
+--hop_length 368 --note_type "quarter" --sigma_time 2 --sigma_chroma 2 --device "cuda" --weightType "float32" --embed_type "cum" \
+--number_of_chromas 12 --number_of_chromas_focus 4 --jitter_strength 0.001 --num_prompt_shuffles 4 --bpm 76 \
+--base_prompt \
+"sunlit forest with contrasting green and white hues, flowing watercolor style, serene and inviting atmosphere, reminiscent of an old past, gentle light filtering through leaves, peaceful river meandering through ancient trees" \
+--target_prompts \
+"a white willow tree gracefully bending over a crystal-clear stream, delicate leaves shimmering in the sunlight" \
+"emerald-green moss covering ancient stone pathways, soft and inviting, footprints gently fading" \
+"white blossoms hanging from branches, creating a canopy of light and shadow, petals softly falling" \
+"a serene river with green lily pads floating peacefully, reflections of the sky dancing on the water" \
+"whimsical white lanterns hanging from intertwined branches, casting a gentle glow on the forest floor" \
+"lush green ferns unfurling beside a quiet brook, droplets of water sparkling in the sunlight" \
+"white deer grazing calmly in a sun-dappled clearing, eyes reflecting the wisdom of the forest" \
+"verdant canopy overhead with rays of white light piercing through, creating patterns on the ground" \
+"an old wooden bridge covered in green ivy, arching gracefully over a tranquil stream" \
+"white pebbles lining the riverbank, smooth and inviting, contrasting with the rich green surroundings" \
+"green moss-covered benches nestled between towering trees, perfect for peaceful contemplation" \
+"gentle waterfalls cascading into a clear pool, surrounded by vibrant green foliage and white flowers"
+
+
+#try with no jitter!

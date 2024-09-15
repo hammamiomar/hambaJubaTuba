@@ -15,10 +15,11 @@ dtype_map = {
 }
 
 def main(song, output_path, device, weightType, seed, hop_length, distance, base_prompt, target_prompts, alpha, 
-         noteType, sigma_time, sigma_chroma, jitter_strength, number_of_chromas, embed_type,number_of_chromas_focus, bpm):
+         noteType, sigma_time, sigma_chroma, jitter_strength, number_of_chromas, embed_type,number_of_chromas_focus, bpm,
+         num_prompt_shuffles):
     
     visualizer = NoiseVisualizer(device=device, weightType=weightType, seed=seed)
-
+    print(f'loaded {device} as device')
     start_time = time.time()  # Start total timing
     visualizer.loadSong(song, hop_length=hop_length, number_of_chromas=number_of_chromas, bpm=bpm)
     print(f"Loaded song in {time.time() - start_time:.2f} seconds.")
@@ -44,7 +45,8 @@ def main(song, output_path, device, weightType, seed, hop_length, distance, base
                                                 alpha=alpha,
                                                 sigma_time=sigma_time,
                                                 sigma_chroma=sigma_chroma,
-                                                number_of_chromas_focus=number_of_chromas_focus)
+                                                number_of_chromas_focus=number_of_chromas_focus,
+                                                num_prompt_shuffles=num_prompt_shuffles)
     
     
     print(f"Got prompt embeds in {time.time() - step_time:.2f} seconds.")
@@ -95,6 +97,7 @@ if __name__ == "__main__":
     parser.add_argument("--number_of_chromas_focus", type=int, default=6)
     parser.add_argument("--embed_type", type=str, default="focus")
     parser.add_argument("--bpm", type=int, default=None)
+    parser.add_argument("--num_prompt_shuffles", type=int, default=4)
 
     
 
@@ -117,4 +120,5 @@ if __name__ == "__main__":
          number_of_chromas = args.number_of_chromas,
          number_of_chromas_focus = args.number_of_chromas_focus,
          embed_type = args.embed_type,
-         bpm=args.bpm)
+         bpm=args.bpm,
+         num_prompt_shuffles = args.num_prompt_shuffles)

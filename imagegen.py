@@ -288,7 +288,8 @@ class NoiseVisualizer:
         return interpolatedEmbeds
         
         
-    def getPromptEmbedsCum(self, basePrompt, targetPromptChromaScale, alpha=0.5, sigma_time=2, sigma_chroma=1, number_of_chromas_focus=6):
+    def getPromptEmbedsCum(self, basePrompt, targetPromptChromaScale, alpha=0.5, sigma_time=2, sigma_chroma=1, number_of_chromas_focus=6,
+                           num_prompt_shuffles=4):
         """
         Generates interpolated embeddings with multivariate smoothing applied to alpha values.
 
@@ -388,8 +389,15 @@ class NoiseVisualizer:
         # Initialize interpolatedEmbedsAll
         interpolatedEmbedsAll = []
 
-        # For each frame
+        
+        shuffle_points = [int(i * numFrames / num_prompt_shuffles) for i in range(1, num_prompt_shuffles)]  # Calculate exact shuffle points
+                # For each frame
+
         for frame in range(numFrames):
+
+            if frame in shuffle_points:
+                targetEmbeds = targetEmbeds[torch.randperm(targetEmbeds.size(0))]  # Shuffle along dimension 0
+
             alpha_values = alphas[frame, :]  # shape: (number_of_chromas,)
             total_alpha = alpha_values.sum()
             if total_alpha > alpha:
