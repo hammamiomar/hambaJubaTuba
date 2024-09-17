@@ -53,7 +53,8 @@ def main(song, output_path, device, weightType, seed, hop_length, distance, base
 
     step_time = time.time()  # Reset step timing
     images = visualizer.getVisuals(latents=latents, 
-                                   promptEmbeds=prompt_embeds)
+                                   promptEmbeds=prompt_embeds,
+                                   num_inference_steps=4)
     print(f"Generated visuals in {time.time() - step_time:.2f} seconds.")
 
     step_time = time.time()  # Reset step timing

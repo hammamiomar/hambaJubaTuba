@@ -20,9 +20,9 @@ python main.py --song "songs/bendecida.mp3" --output "outputs/bendecidaquartyerB
 #try with no jitter!
 
 
-python main.py --song "inputs/GREEN.mp3" --output "outputs/green.mp4" --alpha 0.75 --distance 0.05 \--seed 9472056239 \
+python main.py --song "inputs/chanelSnip.mp3" --output "outputs/green.mp4" --alpha 0.75 --distance 0.05 \--seed 9472056239 \
 --hop_length 368 --note_type "quarter" --sigma_time 2 --sigma_chroma 2 --device "cuda" --weightType "float32" --embed_type "cum" \
---number_of_chromas 12 --number_of_chromas_focus 4 --jitter_strength 0.001 --num_prompt_shuffles 4 --bpm 76 \
+--number_of_chromas 12 --number_of_chromas_focus 4 --jitter_strength 0.001 --num_prompt_shuffles 4 --bpm 106 \
 --base_prompt \
 "sunlit forest with contrasting green and white hues, flowing watercolor style, serene and inviting atmosphere, reminiscent of an old past, gentle light filtering through leaves, peaceful river meandering through ancient trees" \
 --target_prompts \

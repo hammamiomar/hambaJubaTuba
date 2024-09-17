@@ -4,7 +4,7 @@ from torch.linalg import norm
 from scipy.ndimage import gaussian_filter1d
 from scipy.ndimage import gaussian_filter
 
-from diffusers import StableDiffusionPipeline
+from diffusers import StableDiffusionPipeline, UNet2DConditionModel
 import librosa
 import tqdm as tqdm
 from PIL import Image
@@ -12,7 +12,12 @@ import numpy as np
 import moviepy.editor as mpy
 import math
 
+import sys
+sys.path.append('/flow/src') 
 
+from diffusers import StableDiffusionPipeline, UNet2DConditionModel
+from utils_perflow import merge_delta_weights_into_unet
+from scheduler_perflow import PeRFlowScheduler
 
 
 class NoiseVisualizer:
@@ -24,7 +29,12 @@ class NoiseVisualizer:
         self.textEncoder = self.pipe.text_encoder
         self.tokenizer = self.pipe.tokenizer
     
-    #def loadPipeSd(self, model_path):
+    def loadPipeSd(self, model_path = "Lykon/dreamshaper-8"):
+        delta_weights = UNet2DConditionModel.from_pretrained("hansyan/perflow-sd15-delta-weights", torch_dtype=self.weightType , variant="v0-1",).state_dict()
+        pipe = StableDiffusionPipeline.from_pretrained(model_path, torch_dtype=self.weightType)
+        pipe = merge_delta_weights_into_unet(pipe, delta_weights)
+        pipe.scheduler = PeRFlowScheduler.from_config(pipe.scheduler.config, prediction_type="diff_eps", num_time_windows=4)
+        pipe.to("cuda", torch.float16)
         
     def loadSong(self,file,hop_length, number_of_chromas, bpm=None):
         y, sr = librosa.load(file) # 3 min 52 sec
