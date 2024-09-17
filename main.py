@@ -19,6 +19,7 @@ def main(song, output_path, device, weightType, seed, hop_length, distance, base
          num_prompt_shuffles):
     
     visualizer = NoiseVisualizer(device=device, weightType=weightType, seed=seed)
+    visualizer.loadPipeSd()
     print(f'loaded {device} as device')
     start_time = time.time()  # Start total timing
     visualizer.loadSong(song, hop_length=hop_length, number_of_chromas=number_of_chromas, bpm=bpm)

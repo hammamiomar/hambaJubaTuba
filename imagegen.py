@@ -13,7 +13,7 @@ import moviepy.editor as mpy
 import math
 
 import sys
-sys.path.append('/flow/src') 
+sys.path.append('flow/src') 
 
 from diffusers import StableDiffusionPipeline, UNet2DConditionModel
 from utils_perflow import merge_delta_weights_into_unet
@@ -25,16 +25,18 @@ class NoiseVisualizer:
         torch.manual_seed(seed)
         self.device = device
         self.weightType = weightType
-        self.pipe = StableDiffusionPipeline.from_pretrained("IDKiro/sdxs-512-dreamshaper", torch_dtype=weightType)
-        self.textEncoder = self.pipe.text_encoder
-        self.tokenizer = self.pipe.tokenizer
+        # self.pipe = StableDiffusionPipeline.from_pretrained("IDKiro/sdxs-512-dreamshaper", torch_dtype=weightType)
+        # self.textEncoder = self.pipe.text_encoder
+        # self.tokenizer = self.pipe.tokenizer
     
     def loadPipeSd(self, model_path = "Lykon/dreamshaper-8"):
         delta_weights = UNet2DConditionModel.from_pretrained("hansyan/perflow-sd15-delta-weights", torch_dtype=self.weightType , variant="v0-1",).state_dict()
         pipe = StableDiffusionPipeline.from_pretrained(model_path, torch_dtype=self.weightType)
-        pipe = merge_delta_weights_into_unet(pipe, delta_weights)
-        pipe.scheduler = PeRFlowScheduler.from_config(pipe.scheduler.config, prediction_type="diff_eps", num_time_windows=4)
-        pipe.to("cuda", torch.float16)
+        self.pipe = merge_delta_weights_into_unet(pipe, delta_weights)
+        self.pipe.scheduler = PeRFlowScheduler.from_config(pipe.scheduler.config, prediction_type="diff_eps", num_time_windows=4)
+        
+        self.textEncoder = self.pipe.text_encoder
+        self.tokenizer = self.pipe.tokenizer
         
     def loadSong(self,file,hop_length, number_of_chromas, bpm=None):
         y, sr = librosa.load(file) # 3 min 52 sec
