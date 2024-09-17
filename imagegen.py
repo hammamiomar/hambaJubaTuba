@@ -1,4 +1,4 @@
-import torch
+import torch, torchvision
 from torch import FloatTensor, LongTensor, Tensor, Size, lerp, zeros_like
 from torch.linalg import norm
 from scipy.ndimage import gaussian_filter1d
@@ -24,6 +24,8 @@ class NoiseVisualizer:
         self.textEncoder = self.pipe.text_encoder
         self.tokenizer = self.pipe.tokenizer
     
+    #def loadPipeSd(self, model_path):
+        
     def loadSong(self,file,hop_length, number_of_chromas, bpm=None):
         y, sr = librosa.load(file) # 3 min 52 sec
         self.hop_length=hop_length
