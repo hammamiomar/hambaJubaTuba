@@ -93,7 +93,9 @@ class NoiseVisualizer:
         return torch.tensor(output_array, dtype=self.weightType)
     def getBeatLatentsCircle(self, distance, noteType, jitter_strength): 
         # shape: (batch, latent channels, height, width)
-        shape = (1, 4, 64, 64)
+        latent_size = self.pipe.unet.config.sample_size
+        latent_channels = self.pipe.unet.in_channels
+        shape = (1, latent_channels, latent_size, latent_size)
         
         # Initialize random noise for X and Y coordinates of the walk
         walkNoiseX = torch.randn(shape, dtype=self.weightType, device=self.device)
@@ -114,39 +116,6 @@ class NoiseVisualizer:
         # Compute cos and sin of the angles
         walkScaleX = torch.cos(angles)
         walkScaleY = torch.sin(angles)
-        
-        # Expand walkScaleX and walkScaleY to match dimensions for multiplication
-        walkScaleX = walkScaleX.view(-1, 1, 1, 1)
-        walkScaleY = walkScaleY.view(-1, 1, 1, 1)
-        
-        # Generate the noise tensors based on the interpolated scales
-        noiseX = walkScaleX * walkNoiseX
-        noiseY = walkScaleY * walkNoiseY
-        
-        # Add the noise contributions for X and Y to create the latent walk
-        latents = noiseX + noiseY  # Shape: (steps, 4, 64, 64)
-        return latents
-    
-    def getBeatLatentsSpiral(self, distance, noteType, spiral_rate): 
-        # shape: (batch, latent channels, height, width)
-        shape = (1, 4, 64, 64)
-        
-        # Initialize random noise for X and Y coordinates of the walk
-        walkNoiseX = torch.randn(shape, dtype=self.weightType, device=self.device)
-        walkNoiseY = torch.randn(shape, dtype=self.weightType, device=self.device)
-        
-        # Apply the easing values to the scales (mapping easing values to noise)
-        easing_values = self.getEasedBeats(noteType=noteType).to(self.device)
-        
-        # Compute cumulative sum of easing values to get the angle
-        # Adjust the scaling factor to control speed of rotation
-        scaling_factor = distance * 2 * math.pi  # Multiply by 2π for full rotations
-        radii = easing_values * scaling_factor + spiral_rate * torch.arange(len(easing_values)).to(self.device)
-        angles = torch.cumsum(easing_values, dim=0) * scaling_factor
-        
-        # Compute cos and sin of the angles
-        walkScaleX = radii * torch.cos(angles)
-        walkScaleY = radii * torch.sin(angles)
         
         # Expand walkScaleX and walkScaleY to match dimensions for multiplication
         walkScaleX = walkScaleX.view(-1, 1, 1, 1)
