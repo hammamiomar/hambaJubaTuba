@@ -1,7 +1,7 @@
 import argparse
 import os
-from imagegen import NoiseVisualizer
-from utils import create_mp4_from_pil_images
+from src.imagegen import NoiseVisualizer
+from src.utils import create_mp4_from_pil_images
 import torch
 import time
 

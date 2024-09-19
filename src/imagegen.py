@@ -38,6 +38,9 @@ class NoiseVisualizer:
         self.textEncoder = self.pipe.text_encoder
         self.tokenizer = self.pipe.tokenizer
         
+        self.pipe.set_progress_bar_config(disable=True)
+
+        
     def loadSong(self,file,hop_length, number_of_chromas, bpm=None):
         y, sr = librosa.load(file) # 3 min 52 sec
         self.hop_length=hop_length
@@ -286,6 +289,7 @@ class NoiseVisualizer:
         Returns:
         - interpolatedEmbeds (torch.Tensor): The interpolated embeddings tensor.
         """
+        # First, get top chromas in terms of absolute value, sliced. 
         # Transpose chroma to shape: (numFrames, 12)
         chroma = self.chroma_cq.T  # shape: (numFrames, 12)
         numFrames = chroma.shape[0]
@@ -294,7 +298,7 @@ class NoiseVisualizer:
         chroma_cq_delta_abs = np.abs(self.chroma_cq_delta)
         top_chromas = np.argsort(-chroma_cq_delta_abs, axis=0)[:number_of_chromas, :]  # shape: (number_of_chromas, numFrames)
 
-        
+        # At the onset frames, get the top chromas.
         # Onset frames and top N chromas at onsets
         onset_frames = self.onset_bt
         top_chromas_at_onsets = top_chromas[:, self.onset_bt]  # shape: (number_of_chromas, len(onset_bt))
@@ -307,7 +311,7 @@ class NoiseVisualizer:
         for i in range(len(onset_frames) - 1):
             start_frame = onset_frames[i]
             end_frame = onset_frames[i + 1]
-            chroma_indices = top_chromas_at_onsets[:, i]  # shape: (number_of_chromas,)
+            chroma_indices = top_chromas_at_onsets[:, i]  # shape: (number_of_chromas,) chromas at the onset frame..
 
             if start_frame == end_frame:
                 end_frame += 1
@@ -317,11 +321,11 @@ class NoiseVisualizer:
 
             # Normalize chroma magnitudes per frame to sum to alpha
             magnitudes_sum = chroma_magnitudes.sum(axis=1, keepdims=True) + 1e-8  # Avoid division by zero
-            alpha_values = (chroma_magnitudes / magnitudes_sum) * alpha  # shape: (interval_length, number_of_chromas)
+            alpha_values = (chroma_magnitudes / magnitudes_sum) * alpha  # shape: (interval_length, number_of_chromas) # TODO CHECK IF TIMES ALPHA NEEDED>??
 
             # Assign alpha_values and chroma indices to frames
             alphas[start_frame:end_frame, :] = alpha_values
-            chromas_per_frame[start_frame:end_frame, :] = chroma_indices.reshape(1, number_of_chromas)
+            chromas_per_frame[start_frame:end_frame, :] = chroma_indices.reshape(1, number_of_chromas) # shape : (numframes,num_chromas)
 
         # Handle frames after the last onset
         start_frame = onset_frames[-1]
@@ -339,10 +343,10 @@ class NoiseVisualizer:
         # Apply a 2D Gaussian filter to smooth across time and chroma dimensions
         # The Gaussian filter requires specifying the sigma for each axis
         # Axis 0: Time (frames), Axis 1: Chroma
-        alphas_smoothed = gaussian_filter(alphas, sigma=(sigma_time, sigma_chroma), mode='reflect')
+        alphas_smoothed = gaussian_filter(alphas, sigma=(sigma_time, sigma_chroma), mode='reflect') # alphas are the chroma magnitudes between onset frames, normalized per onset to onset
 
         # **Re-normalize Alphas Per Frame to Ensure the Sum Equals alpha**
-        magnitudes_sum = alphas_smoothed.sum(axis=1, keepdims=True) + 1e-8  # Avoid division by zero
+        magnitudes_sum = alphas_smoothed.sum(axis=1, keepdims=True) + 1e-8  # Avoid division by zero  TODO: IS THIS NEEDED? ?? NO!!!???
         alphas_normalized = (alphas_smoothed / magnitudes_sum) * alpha  # shape: (numFrames, number_of_chromas)
 
         # **Update the Alphas Array with the Smoothed and Normalized Alphas**
@@ -382,21 +386,22 @@ class NoiseVisualizer:
                 targetEmbeds = targetEmbeds[torch.randperm(targetEmbeds.size(0))]  # Shuffle along dimension 0
 
             alpha_values = alphas[frame, :]  # shape: (number_of_chromas,)
-            total_alpha = alpha_values.sum()
+            total_alpha = alpha_values.sum() # TODO IS THIS NEEEDED??? NO!!
             if total_alpha > alpha:
                 alpha_values = (alpha_values / total_alpha) * alpha
                 total_alpha = alpha
 
             base_alpha = 1.0 - total_alpha
-            chroma_indices = chromas_per_frame[frame, :]  # shape: (number_of_chromas,)
+            chroma_indices = chromas_per_frame[frame, :]  # shape: (number_of_chromas,)  what chromas to show in this frame
 
             # Start with baseEmbeds multiplied by base_alpha
             interpolatedEmbed = base_alpha * baseEmbeds
 
             # Add contributions from each target chroma
+            
             for n in range(number_of_chromas):
                 target_embed = targetEmbeds[chroma_indices[n]]  # shape: (seq_len, hidden_size)
-                interpolatedEmbed += alpha_values[n] * target_embed
+                interpolatedEmbed += alpha_values[n] * target_embed 
 
             interpolatedEmbedsAll.append(interpolatedEmbed.unsqueeze(0))  # shape: (1, seq_len, hidden_size)
 

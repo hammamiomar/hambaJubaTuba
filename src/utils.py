@@ -1,5 +1,4 @@
 import torch
-import torchaudio
 import torchvision
 import numpy as np
 import moviepy.editor as mpy
@@ -39,9 +38,3 @@ def create_mp4_from_pil_images(image_array, output_path, song, fps):
         video = video.set_audio(mpy.AudioFileClip(song, fps=44100))
         # Write the result to a file
         video.write_videofile(output_path, fps=fps, audio_codec='aac')
-
-def create_mp4_pytorch(image_array, output_path, song, fps, video_codec):
-        waveform, sr = torchaudio.load(song)
-        torchvision.io.write_video(filename=output_path,video_array=image_array,fps=fps,
-                                   video_codec=video_codec, audio_array=waveform,
-                                   audio_fps=44100, audio_codec="aac")
