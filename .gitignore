@@ -1,7 +1,10 @@
 outputs/
 songs/
+inputs/
 audio.ipynb
 main.ipynb
+flow.ipynb
+flow/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

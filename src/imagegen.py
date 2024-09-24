@@ -1,10 +1,10 @@
-import torch
+import torch, torchvision
 from torch import FloatTensor, LongTensor, Tensor, Size, lerp, zeros_like
 from torch.linalg import norm
 from scipy.ndimage import gaussian_filter1d
 from scipy.ndimage import gaussian_filter
 
-from diffusers import StableDiffusionPipeline
+from diffusers import StableDiffusionPipeline, UNet2DConditionModel
 import librosa
 import tqdm as tqdm
 from PIL import Image
@@ -12,18 +12,40 @@ import numpy as np
 import moviepy.editor as mpy
 import math
 
+# import sys
+# sys.path.append('Instaflow/code/') 
 
+# from diffusers import StableDiffusionPipeline, UNet2DConditionModel
+# from utils_perflow import merge_delta_weights_into_unet
+# from scheduler_perflow import PeRFlowScheduler
 
+from InstaFlow.code.pipeline_rf import RectifiedFlowPipeline
 
 class NoiseVisualizer:
     def __init__(self, device="mps", weightType=torch.float16, seed=42069):
         torch.manual_seed(seed)
         self.device = device
         self.weightType = weightType
-        self.pipe = StableDiffusionPipeline.from_pretrained("IDKiro/sdxs-512-dreamshaper", torch_dtype=weightType)
+        # self.pipe = StableDiffusionPipeline.from_pretrained("IDKiro/sdxs-512-dreamshaper", torch_dtype=weightType)
+        # self.textEncoder = self.pipe.text_encoder
+        # self.tokenizer = self.pipe.tokenizer
+    
+    def loadPipeSd(self, model_path = "Lykon/dreamshaper-8"):
+        # delta_weights = UNet2DConditionModel.from_pretrained("hansyan/perflow-sd15-delta-weights", torch_dtype=self.weightType , variant="v0-1",).state_dict()
+        # pipe = StableDiffusionPipeline.from_pretrained(model_path, torch_dtype=self.weightType)
+        # self.pipe = merge_delta_weights_into_unet(pipe, delta_weights)
+        # self.pipe.scheduler = PeRFlowScheduler.from_config(pipe.scheduler.config, prediction_type="diff_eps", num_time_windows=4)
+        
+        self.pipe = RectifiedFlowPipeline.from_pretrained("XCLIU/instaflow_0_9B_from_sd_1_5", torch_dtype=self.weightType) 
+
+        
         self.textEncoder = self.pipe.text_encoder
         self.tokenizer = self.pipe.tokenizer
-    
+        self.pipe.safety_checker = None
+        self.pipe.set_progress_bar_config(disable=True)
+        self.pipe.to(self.device)
+
+        
     def loadSong(self,file,hop_length, number_of_chromas, bpm=None):
         y, sr = librosa.load(file) # 3 min 52 sec
         self.hop_length=hop_length
@@ -93,7 +115,9 @@ class NoiseVisualizer:
         return torch.tensor(output_array, dtype=self.weightType)
     def getBeatLatentsCircle(self, distance, noteType, jitter_strength): 
         # shape: (batch, latent channels, height, width)
-        shape = (1, 4, 64, 64)
+        latent_size = self.pipe.unet.config.sample_size
+        latent_channels = self.pipe.unet.in_channels
+        shape = (1, latent_channels, latent_size, latent_size)
         
         # Initialize random noise for X and Y coordinates of the walk
         walkNoiseX = torch.randn(shape, dtype=self.weightType, device=self.device)
@@ -114,39 +138,6 @@ class NoiseVisualizer:
         # Compute cos and sin of the angles
         walkScaleX = torch.cos(angles)
         walkScaleY = torch.sin(angles)
-        
-        # Expand walkScaleX and walkScaleY to match dimensions for multiplication
-        walkScaleX = walkScaleX.view(-1, 1, 1, 1)
-        walkScaleY = walkScaleY.view(-1, 1, 1, 1)
-        
-        # Generate the noise tensors based on the interpolated scales
-        noiseX = walkScaleX * walkNoiseX
-        noiseY = walkScaleY * walkNoiseY
-        
-        # Add the noise contributions for X and Y to create the latent walk
-        latents = noiseX + noiseY  # Shape: (steps, 4, 64, 64)
-        return latents
-    
-    def getBeatLatentsSpiral(self, distance, noteType, spiral_rate): 
-        # shape: (batch, latent channels, height, width)
-        shape = (1, 4, 64, 64)
-        
-        # Initialize random noise for X and Y coordinates of the walk
-        walkNoiseX = torch.randn(shape, dtype=self.weightType, device=self.device)
-        walkNoiseY = torch.randn(shape, dtype=self.weightType, device=self.device)
-        
-        # Apply the easing values to the scales (mapping easing values to noise)
-        easing_values = self.getEasedBeats(noteType=noteType).to(self.device)
-        
-        # Compute cumulative sum of easing values to get the angle
-        # Adjust the scaling factor to control speed of rotation
-        scaling_factor = distance * 2 * math.pi  # Multiply by 2π for full rotations
-        radii = easing_values * scaling_factor + spiral_rate * torch.arange(len(easing_values)).to(self.device)
-        angles = torch.cumsum(easing_values, dim=0) * scaling_factor
-        
-        # Compute cos and sin of the angles
-        walkScaleX = radii * torch.cos(angles)
-        walkScaleY = radii * torch.sin(angles)
         
         # Expand walkScaleX and walkScaleY to match dimensions for multiplication
         walkScaleX = walkScaleX.view(-1, 1, 1, 1)
@@ -250,7 +241,7 @@ class NoiseVisualizer:
             padding="max_length",
             truncation=True,
             max_length=77,
-        ).input_ids
+        ).input_ids.to(self.device)
         baseEmbeds = self.textEncoder(baseInput)[0].squeeze(0)  # shape: (seq_len, hidden_size)
 
         targetInputs = self.tokenizer(
@@ -259,7 +250,7 @@ class NoiseVisualizer:
             padding="max_length",
             truncation=True,
             max_length=77,
-        ).input_ids
+        ).input_ids.to(self.device)
         targetEmbeds = self.textEncoder(targetInputs)[0]  # shape: (12, seq_len, hidden_size)
 
         # Initialize interpolatedEmbedsAll
@@ -288,7 +279,8 @@ class NoiseVisualizer:
         return interpolatedEmbeds
         
         
-    def getPromptEmbedsCum(self, basePrompt, targetPromptChromaScale, alpha=0.5, sigma_time=2, sigma_chroma=1, number_of_chromas_focus=6):
+    def getPromptEmbedsCum(self, basePrompt, targetPromptChromaScale, alpha=0.5, sigma_time=2, sigma_chroma=1, number_of_chromas_focus=6,
+                           num_prompt_shuffles=4):
         """
         Generates interpolated embeddings with multivariate smoothing applied to alpha values.
 
@@ -302,6 +294,7 @@ class NoiseVisualizer:
         Returns:
         - interpolatedEmbeds (torch.Tensor): The interpolated embeddings tensor.
         """
+        # First, get top chromas in terms of absolute value, sliced. 
         # Transpose chroma to shape: (numFrames, 12)
         chroma = self.chroma_cq.T  # shape: (numFrames, 12)
         numFrames = chroma.shape[0]
@@ -310,7 +303,7 @@ class NoiseVisualizer:
         chroma_cq_delta_abs = np.abs(self.chroma_cq_delta)
         top_chromas = np.argsort(-chroma_cq_delta_abs, axis=0)[:number_of_chromas, :]  # shape: (number_of_chromas, numFrames)
 
-        
+        # At the onset frames, get the top chromas.
         # Onset frames and top N chromas at onsets
         onset_frames = self.onset_bt
         top_chromas_at_onsets = top_chromas[:, self.onset_bt]  # shape: (number_of_chromas, len(onset_bt))
@@ -323,7 +316,7 @@ class NoiseVisualizer:
         for i in range(len(onset_frames) - 1):
             start_frame = onset_frames[i]
             end_frame = onset_frames[i + 1]
-            chroma_indices = top_chromas_at_onsets[:, i]  # shape: (number_of_chromas,)
+            chroma_indices = top_chromas_at_onsets[:, i]  # shape: (number_of_chromas,) chromas at the onset frame..
 
             if start_frame == end_frame:
                 end_frame += 1
@@ -333,11 +326,11 @@ class NoiseVisualizer:
 
             # Normalize chroma magnitudes per frame to sum to alpha
             magnitudes_sum = chroma_magnitudes.sum(axis=1, keepdims=True) + 1e-8  # Avoid division by zero
-            alpha_values = (chroma_magnitudes / magnitudes_sum) * alpha  # shape: (interval_length, number_of_chromas)
+            alpha_values = (chroma_magnitudes / magnitudes_sum) * alpha  # shape: (interval_length, number_of_chromas) # TODO CHECK IF TIMES ALPHA NEEDED>??
 
             # Assign alpha_values and chroma indices to frames
             alphas[start_frame:end_frame, :] = alpha_values
-            chromas_per_frame[start_frame:end_frame, :] = chroma_indices.reshape(1, number_of_chromas)
+            chromas_per_frame[start_frame:end_frame, :] = chroma_indices.reshape(1, number_of_chromas) # shape : (numframes,num_chromas)
 
         # Handle frames after the last onset
         start_frame = onset_frames[-1]
@@ -355,10 +348,10 @@ class NoiseVisualizer:
         # Apply a 2D Gaussian filter to smooth across time and chroma dimensions
         # The Gaussian filter requires specifying the sigma for each axis
         # Axis 0: Time (frames), Axis 1: Chroma
-        alphas_smoothed = gaussian_filter(alphas, sigma=(sigma_time, sigma_chroma), mode='reflect')
+        alphas_smoothed = gaussian_filter(alphas, sigma=(sigma_time, sigma_chroma), mode='reflect') # alphas are the chroma magnitudes between onset frames, normalized per onset to onset
 
         # **Re-normalize Alphas Per Frame to Ensure the Sum Equals alpha**
-        magnitudes_sum = alphas_smoothed.sum(axis=1, keepdims=True) + 1e-8  # Avoid division by zero
+        magnitudes_sum = alphas_smoothed.sum(axis=1, keepdims=True) + 1e-8  # Avoid division by zero  TODO: IS THIS NEEDED? ?? NO!!!???
         alphas_normalized = (alphas_smoothed / magnitudes_sum) * alpha  # shape: (numFrames, number_of_chromas)
 
         # **Update the Alphas Array with the Smoothed and Normalized Alphas**
@@ -373,39 +366,49 @@ class NoiseVisualizer:
             padding="max_length",
             truncation=True,
             max_length=77,
-        ).input_ids
+        ).input_ids.to(self.device)
         baseEmbeds = self.textEncoder(baseInput)[0].squeeze(0)  # shape: (seq_len, hidden_size)
-
+        baseEmbeds.to(self.device)
+        
         targetInputs = self.tokenizer(
             targetPromptChromaScale,
             return_tensors="pt",
             padding="max_length",
             truncation=True,
             max_length=77,
-        ).input_ids
+        ).input_ids.to(self.device)
         targetEmbeds = self.textEncoder(targetInputs)[0]  # shape: (12, seq_len, hidden_size)
+        targetEmbeds.to(self.device)
 
         # Initialize interpolatedEmbedsAll
         interpolatedEmbedsAll = []
 
-        # For each frame
+        
+        shuffle_points = [int(i * numFrames / num_prompt_shuffles) for i in range(1, num_prompt_shuffles)]  # Calculate exact shuffle points
+                # For each frame
+
         for frame in range(numFrames):
+
+            if frame in shuffle_points:
+                targetEmbeds = targetEmbeds[torch.randperm(targetEmbeds.size(0))]  # Shuffle along dimension 0
+                        
             alpha_values = alphas[frame, :]  # shape: (number_of_chromas,)
-            total_alpha = alpha_values.sum()
+            total_alpha = alpha_values.sum() # TODO IS THIS NEEEDED??? NO!!
             if total_alpha > alpha:
                 alpha_values = (alpha_values / total_alpha) * alpha
                 total_alpha = alpha
 
             base_alpha = 1.0 - total_alpha
-            chroma_indices = chromas_per_frame[frame, :]  # shape: (number_of_chromas,)
+            chroma_indices = chromas_per_frame[frame, :]  # shape: (number_of_chromas,)  what chromas to show in this frame
 
             # Start with baseEmbeds multiplied by base_alpha
             interpolatedEmbed = base_alpha * baseEmbeds
 
             # Add contributions from each target chroma
+            
             for n in range(number_of_chromas):
                 target_embed = targetEmbeds[chroma_indices[n]]  # shape: (seq_len, hidden_size)
-                interpolatedEmbed += alpha_values[n] * target_embed
+                interpolatedEmbed += alpha_values[n] * target_embed 
 
             interpolatedEmbedsAll.append(interpolatedEmbed.unsqueeze(0))  # shape: (1, seq_len, hidden_size)
 
@@ -413,7 +416,19 @@ class NoiseVisualizer:
 
         return interpolatedEmbeds
     
-    def getVisuals(self, latents, promptEmbeds, num_inference_steps=1, batch_size=1):
+    def getVisuals(self, latents, promptEmbeds, num_inference_steps=1, batch_size=1, guidance_scale=7):
+        
+        
+        negativePrompt = self.tokenizer(
+            "blurry, low resolution, bad anatomy, deformed, disfigured, extra limbs, extra fingers, missing limbs, bad proportions, bad composition, out of frame, watermark, text, grainy, poorly drawn face",
+            return_tensors="pt",
+            padding="max_length",
+            truncation=True,
+            max_length=77,
+        ).input_ids.to(self.device)
+        negativeEmbeds = self.textEncoder(negativePrompt)[0]
+        negativeEmbeds.to(self.device)
+        
         #self.pipe.vae = self.vae
         self.pipe.to(device=self.device, dtype=self.weightType)
         
@@ -426,10 +441,11 @@ class NoiseVisualizer:
         
         for i in tqdm.tqdm(range(0, num_frames, batch_size)):
             frames = self.pipe(prompt_embeds=promptEmbeds[i],
-                       guidance_scale=0,
-                       num_inference_steps=num_inference_steps,
-                       latents=latents[i:i+batch_size],
-                       output_type="pil").images
+                               negative_prompt_embeds=negativeEmbeds,
+                               guidance_scale=guidance_scale,
+                               num_inference_steps=num_inference_steps,
+                               latents=latents[i:i+batch_size],
+                               output_type="pil").images
             allFrames.extend(frames)
         return allFrames
         

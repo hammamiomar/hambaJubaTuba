@@ -1,0 +1,84 @@
+python main.py --song "songs/bendecida.mp3" --output "outputs/bendecidaquartyerBPMFix.mp4" --alpha 0.75 --distance 0.05 \--seed 9472056239 \
+--hop_length 368 --note_type "quarter" --sigma_time 2 --sigma_chroma 2 --device "mps" --weightType "float16" --embed_type "cum" \
+--number_of_chromas 12 --number_of_chromas_focus 4 --jitter_strength 0.1 \
+--base_prompt \
+"dark, dirty tunnel illuminated by eerie, ghostly light, calm watercolor aesthetic, unsettling stillness, shadows dancing with secrets" \
+--target_prompts \
+"a pool of stagnant water with floating debris, japanese aesthetic, soft watercolor tones, mysterious depths inviting exploration" \
+"twisted vines creeping along the tunnel walls, japanese aesthetic, gentle shadows, nature reclaiming the forgotten passage" \
+"a lone, tattered coat draped over a broken hook, japanese aesthetic, faded colors, remnants of past wanderers stirring curiosity" \
+"an ancient, cobweb-covered chandelier swaying gently, its dim light flickering like forgotten memories" \
+"a cracked, ornate mirror reflecting fragmented, distorted realities, inviting deeper exploration" \
+"tattered curtains hanging from broken windows, fluttering softly despite the still air" \
+"moss-covered statues standing sentinel in the shadows, their eyes seeming to follow every movement" \
+"dripping water pooling on the cold, grimy floor, creating ripples that distort the surrounding darkness" \
+"a solitary, flickering bulb casting long, ominous shadows against the tunnel walls" \
+"rusty, abandoned tools scattered haphazardly, telling stories of past labor and neglect" \
+"vine-like tendrils creeping along the tunnel ceiling, slowly reclaiming the space" \
+"faint, ghostly silhouettes moving silently in the distance, hinting at unseen presences" \
+
+#try with no jitter!
+
+
+python main.py --song "inputs/chanelSnip.mp3" --output "outputs/green.mp4" --alpha 0.75 --distance 0.05 \--seed 9472056239 \
+--hop_length 368 --note_type "quarter" --sigma_time 2 --sigma_chroma 2 --device "cuda" --weightType "float32" --embed_type "cum" \
+--number_of_chromas 12 --number_of_chromas_focus 4 --jitter_strength 0.001 --num_prompt_shuffles 4 --bpm 106 \
+--base_prompt \
+"sunlit forest with contrasting green and white hues, flowing watercolor style, serene and inviting atmosphere, reminiscent of an old past, gentle light filtering through leaves, peaceful river meandering through ancient trees" \
+--target_prompts \
+"a white willow tree gracefully bending over a crystal-clear stream, delicate leaves shimmering in the sunlight" \
+"emerald-green moss covering ancient stone pathways, soft and inviting, footprints gently fading" \
+"white blossoms hanging from branches, creating a canopy of light and shadow, petals softly falling" \
+"a serene river with green lily pads floating peacefully, reflections of the sky dancing on the water" \
+"whimsical white lanterns hanging from intertwined branches, casting a gentle glow on the forest floor" \
+"lush green ferns unfurling beside a quiet brook, droplets of water sparkling in the sunlight" \
+"white deer grazing calmly in a sun-dappled clearing, eyes reflecting the wisdom of the forest" \
+"verdant canopy overhead with rays of white light piercing through, creating patterns on the ground" \
+"an old wooden bridge covered in green ivy, arching gracefully over a tranquil stream" \
+"white pebbles lining the riverbank, smooth and inviting, contrasting with the rich green surroundings" \
+"green moss-covered benches nestled between towering trees, perfect for peaceful contemplation" \
+"gentle waterfalls cascading into a clear pool, surrounded by vibrant green foliage and white flowers"
+
+
+#try with no jitter!
+
+
+python main.py --song "inputs/g2g.mp3" --output "outputs/g2g.mp4" --alpha 0.75 --distance 0.1 \--seed 9472056239 \
+--hop_length 368 --note_type "quarter" --sigma_time 1 --sigma_chroma 1 --device "cuda" --weightType "float32" --embed_type "cum" \
+--number_of_chromas 12 --number_of_chromas_focus 4 --jitter_strength 0.2 --num_prompt_shuffles 4 --bpm 142 \
+--base_prompt \
+"Demonic creatures with exaggerated cartoonish features—horns, tails, and wide grins—moving through the brightly lit supermarket with a playful, rhythmic bounce in their steps, as if dancing through the aisles while casually shopping. Their movements are fluid, lighthearted, and full of personality as they push carts overflowing with quirky items like spicy hot sauce, lava rocks, and glowing potions. The supermarket shelves are filled with strange, supernatural products, neon signs flickering overhead, and the demons are laughing and grooving to their own beat, their mischievous personalities shining through every exaggerated movement, in a fun, surreal atmosphere." \
+--target_prompts \
+"A group of mischievous, cartoonish demons in the cereal aisle, fighting over a box of ‘Flamin' Fiery Loops,’ their tugging movements turning into a playful tug-of-war dance, their feet shuffling and sliding in rhythm, their bodies swaying and bouncing to the beat. Shelves are lined with absurd cereals like ‘Devil’s Crunch,’ and ‘Hades’ O’s,’ with the whole scene feeling like a chaotic, but fun dance-off in a vibrant, cartoonish style." \
+"A short, round demon in the frozen foods section, attempting a clumsy little jig as he tries to reach for a carton of ‘Inferno Ice Cream’ on the top shelf. His tiny wings flutter in sync with his awkward footwork, creating a comical dance of frustration and determination. The frosty air swirls around him, matching the rhythm of his dance, while freezer lights flicker in sync with his tiny hops and steps." \
+"Two demons at the checkout, one impatiently tapping its hooved foot to a rhythmic beat while the other sways side to side as they try to scan a ‘Cursed Pineapple.’ The scanner beeps in time with their movements, as the cart nearby rocks in sync to the rhythm of the checkout process, and sparks fly from the register like fireworks in time with their subtle dance." \
+"A slender, elegant demon gliding gracefully through the produce section, her movements turning into a smooth, flowing dance as she inspects oversized, glowing fruits and veggies. Her claws gently twirl the enchanted items as she spins lightly between the aisles, with floating grocery bags swaying in rhythm to her calm yet stylish dance, creating an ethereal, magical scene." \
+"A gang of young demons riding shopping carts down the candy aisle, their wild cart rides becoming a dynamic, high-energy dance routine. They leap and spin off their carts, twisting in mid-air, their flames leaving swirling trails of light behind them, while the candy displays explode with colorful, sweet chaos, turning the aisle into a zany, candy-fueled dance party." \
+"A tiny, baby demon in the toy section, bouncing and spinning in little dance steps as it clutches a stuffed dragon and a teddy bear. The shelves are lined with vibrant, magical toys that seem to bop in rhythm with the demon’s happy dance, while enchanted toys whirl around, adding a fun, playful energy to the scene." \
+"A hulking, muscular demon browsing the soda aisle, his body subtly grooving as he tosses bottles of ‘Hellfire Cola’ and ‘Magma Fizz’ into his cart. His movements are slow yet rhythmic, a casual sway of his hips and taps of his hooves as smaller demons scurry around him, joining in with their own little dances. Bottles glow in time with the beat, the whole aisle alive with playful, rhythmic energy." \
+"A fashionable, stylish demon in the cosmetics aisle, spinning in place as she tests out magical beauty products like ‘Vampire Glow’ and ‘Hexed Lipstick.’ Each twirl is accompanied by floating bottles and jars that sway in time with her movements, casting rainbow-like sparkles that seem to pulse with the rhythm of her graceful, cartoony dance, the whole scene exuding whimsical, magical energy." \
+"A clumsy demon knocking over a pyramid of canned goods in the middle of the store, the falling cans bouncing and rolling in sync with his panicked, cartoonish dance. As he tries to catch the falling items, his body moves in a frantic yet rhythmic fashion, his feet shuffling to the beat of the cans hitting the ground, the chaos itself becoming an unintentional, slapstick dance performance." \
+"A devilishly sophisticated demon sitting in the supermarket café, casually tapping their claws and lightly swaying to the rhythm of a background melody, sipping from a cup of ‘Eternal Roast Coffee.’ The scene is calm yet subtly in motion, with pastries levitating in time with the gentle rhythm, while the demon’s quiet dance of tapping and head bobs contrasts with the more chaotic energy of the store around them." \
+"An over-enthusiastic demon in the electronics aisle, dancing in wild circles as they test out an enchanted vacuum cleaner that’s gone rogue. The vacuum spins around in sync with the demon’s frenzied dance, sucking up everything in its path, including cursed trinkets and loose items. The demon’s laughter and the vacuum’s chaotic zigzagging create a humorous, high-energy dance routine in the middle of the aisle." \
+"A sneaky, mischievous demon hiding in the clothing racks, popping out with little dance moves to scare shoppers. Every leap and scare is followed by a rhythmic jig, its cartoonish face twisted in glee as it dances from one hiding spot to the next. Brightly colored scarves and hats swirl in the air, joining the playful dance as the demon hops from one rack to another, blending mischief with rhythm."
+
+
+
+python main.py --song "inputs/comecar.mp3" --output "outputs/cumm2.mp4" --alpha 1.0 --distance 0.3 \--seed 315144 \
+--hop_length 377 --note_type "half" --sigma_time 3 --sigma_chroma 3 --device "cuda" --weightType "float16" --embed_type "focus" \
+--number_of_chromas 12 --number_of_chromas_focus 2 --jitter_strength 0.3 --num_prompt_shuffles 4 --bpm 132 --num_inference_steps 1 --guidance_scale 0 \
+--base_prompt \
+"Dark, sensual demon woman with sleek horns, glowing red eyes, glossy obsidian skin, standing in a dramatic environment. Watercolor style with sharp yet soft tones, realistic and glossy." \
+--target_prompts \
+"Demon woman in a dark forest, mist swirling around her, glowing red eyes piercing the shadows, twisted trees in watercolor strokes." \
+"Demon woman near an erupting volcano, lava glowing behind her, ash swirling, her obsidian skin reflecting fiery tones in sharp detail." \
+"Demon woman standing in a vast desert at dusk, golden light fading, her glowing eyes reflecting the barren land, wind stirring dust." \
+"Demon woman on a moonlit beach, waves softly crashing behind her, her glossy skin reflecting the moonlight, black hair moving gently." \
+"Demon woman on a snowy mountain cliff, wind blowing snow around her, glowing red eyes cutting through the cold mist, sharp peaks in view." \
+"Demon woman before an ancient castle, crumbling walls behind her, ivy creeping up, her black dress flowing, glowing eyes commanding attention." \
+"Demon woman in front of a stormy sea, lightning flashing in the distance, waves crashing, her black hair swirling, eyes glowing intensely." \
+"Demon woman in a misty swamp, her glowing red eyes cutting through fog, twisted trees surrounding her, glossy skin reflecting soft light." \
+"Demon woman in a crumbling cathedral, stained glass shattered behind her, glowing eyes reflecting dim light, sharp features standing out." \
+"Demon woman in an overgrown garden, pale moonlight shining, plants and statues fading into nature, her eyes glowing in the soft mist." \
+"Demon woman standing in a field under a starry sky, wind moving tall grass, her glowing eyes reflecting distant stars, black hair flowing." \
+"Demon woman in a field of lava, sharp rocks surrounding her, molten lava flowing in glowing streams, her obsidian skin reflecting the heat."
