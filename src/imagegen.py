@@ -12,13 +12,14 @@ import numpy as np
 import moviepy.editor as mpy
 import math
 
-import sys
-sys.path.append('flow/src') 
+# import sys
+# sys.path.append('Instaflow/code/') 
 
-from diffusers import StableDiffusionPipeline, UNet2DConditionModel
-from utils_perflow import merge_delta_weights_into_unet
-from scheduler_perflow import PeRFlowScheduler
+# from diffusers import StableDiffusionPipeline, UNet2DConditionModel
+# from utils_perflow import merge_delta_weights_into_unet
+# from scheduler_perflow import PeRFlowScheduler
 
+from InstaFlow.code.pipeline_rf import RectifiedFlowPipeline
 
 class NoiseVisualizer:
     def __init__(self, device="mps", weightType=torch.float16, seed=42069):
@@ -30,15 +31,19 @@ class NoiseVisualizer:
         # self.tokenizer = self.pipe.tokenizer
     
     def loadPipeSd(self, model_path = "Lykon/dreamshaper-8"):
-        delta_weights = UNet2DConditionModel.from_pretrained("hansyan/perflow-sd15-delta-weights", torch_dtype=self.weightType , variant="v0-1",).state_dict()
-        pipe = StableDiffusionPipeline.from_pretrained(model_path, torch_dtype=self.weightType)
-        self.pipe = merge_delta_weights_into_unet(pipe, delta_weights)
-        self.pipe.scheduler = PeRFlowScheduler.from_config(pipe.scheduler.config, prediction_type="diff_eps", num_time_windows=4)
+        # delta_weights = UNet2DConditionModel.from_pretrained("hansyan/perflow-sd15-delta-weights", torch_dtype=self.weightType , variant="v0-1",).state_dict()
+        # pipe = StableDiffusionPipeline.from_pretrained(model_path, torch_dtype=self.weightType)
+        # self.pipe = merge_delta_weights_into_unet(pipe, delta_weights)
+        # self.pipe.scheduler = PeRFlowScheduler.from_config(pipe.scheduler.config, prediction_type="diff_eps", num_time_windows=4)
+        
+        self.pipe = RectifiedFlowPipeline.from_pretrained("XCLIU/instaflow_0_9B_from_sd_1_5", torch_dtype=self.weightType) 
+
         
         self.textEncoder = self.pipe.text_encoder
         self.tokenizer = self.pipe.tokenizer
-        
+        self.pipe.safety_checker = None
         self.pipe.set_progress_bar_config(disable=True)
+        self.pipe.to(self.device)
 
         
     def loadSong(self,file,hop_length, number_of_chromas, bpm=None):
@@ -236,7 +241,7 @@ class NoiseVisualizer:
             padding="max_length",
             truncation=True,
             max_length=77,
-        ).input_ids
+        ).input_ids.to(self.device)
         baseEmbeds = self.textEncoder(baseInput)[0].squeeze(0)  # shape: (seq_len, hidden_size)
 
         targetInputs = self.tokenizer(
@@ -245,7 +250,7 @@ class NoiseVisualizer:
             padding="max_length",
             truncation=True,
             max_length=77,
-        ).input_ids
+        ).input_ids.to(self.device)
         targetEmbeds = self.textEncoder(targetInputs)[0]  # shape: (12, seq_len, hidden_size)
 
         # Initialize interpolatedEmbedsAll
@@ -361,17 +366,19 @@ class NoiseVisualizer:
             padding="max_length",
             truncation=True,
             max_length=77,
-        ).input_ids
+        ).input_ids.to(self.device)
         baseEmbeds = self.textEncoder(baseInput)[0].squeeze(0)  # shape: (seq_len, hidden_size)
-
+        baseEmbeds.to(self.device)
+        
         targetInputs = self.tokenizer(
             targetPromptChromaScale,
             return_tensors="pt",
             padding="max_length",
             truncation=True,
             max_length=77,
-        ).input_ids
+        ).input_ids.to(self.device)
         targetEmbeds = self.textEncoder(targetInputs)[0]  # shape: (12, seq_len, hidden_size)
+        targetEmbeds.to(self.device)
 
         # Initialize interpolatedEmbedsAll
         interpolatedEmbedsAll = []
@@ -384,7 +391,7 @@ class NoiseVisualizer:
 
             if frame in shuffle_points:
                 targetEmbeds = targetEmbeds[torch.randperm(targetEmbeds.size(0))]  # Shuffle along dimension 0
-
+                        
             alpha_values = alphas[frame, :]  # shape: (number_of_chromas,)
             total_alpha = alpha_values.sum() # TODO IS THIS NEEEDED??? NO!!
             if total_alpha > alpha:
@@ -409,7 +416,19 @@ class NoiseVisualizer:
 
         return interpolatedEmbeds
     
-    def getVisuals(self, latents, promptEmbeds, num_inference_steps=1, batch_size=1):
+    def getVisuals(self, latents, promptEmbeds, num_inference_steps=1, batch_size=1, guidance_scale=7):
+        
+        
+        negativePrompt = self.tokenizer(
+            "blurry, low resolution, bad anatomy, deformed, disfigured, extra limbs, extra fingers, missing limbs, bad proportions, bad composition, out of frame, watermark, text, grainy, poorly drawn face",
+            return_tensors="pt",
+            padding="max_length",
+            truncation=True,
+            max_length=77,
+        ).input_ids.to(self.device)
+        negativeEmbeds = self.textEncoder(negativePrompt)[0]
+        negativeEmbeds.to(self.device)
+        
         #self.pipe.vae = self.vae
         self.pipe.to(device=self.device, dtype=self.weightType)
         
@@ -422,10 +441,11 @@ class NoiseVisualizer:
         
         for i in tqdm.tqdm(range(0, num_frames, batch_size)):
             frames = self.pipe(prompt_embeds=promptEmbeds[i],
-                       guidance_scale=0,
-                       num_inference_steps=num_inference_steps,
-                       latents=latents[i:i+batch_size],
-                       output_type="pil").images
+                               negative_prompt_embeds=negativeEmbeds,
+                               guidance_scale=guidance_scale,
+                               num_inference_steps=num_inference_steps,
+                               latents=latents[i:i+batch_size],
+                               output_type="pil").images
             allFrames.extend(frames)
         return allFrames
         

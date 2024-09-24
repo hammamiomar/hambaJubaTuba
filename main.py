@@ -16,7 +16,7 @@ dtype_map = {
 
 def main(song, output_path, device, weightType, seed, hop_length, distance, base_prompt, target_prompts, alpha, 
          noteType, sigma_time, sigma_chroma, jitter_strength, number_of_chromas, embed_type,number_of_chromas_focus, bpm,
-         num_prompt_shuffles):
+         num_prompt_shuffles, guidance_scale, num_inference_steps):
     
     visualizer = NoiseVisualizer(device=device, weightType=weightType, seed=seed)
     visualizer.loadPipeSd()
@@ -55,7 +55,8 @@ def main(song, output_path, device, weightType, seed, hop_length, distance, base
     step_time = time.time()  # Reset step timing
     images = visualizer.getVisuals(latents=latents, 
                                    promptEmbeds=prompt_embeds,
-                                   num_inference_steps=4)
+                                   num_inference_steps=num_inference_steps, 
+                                   guidance_scale=guidance_scale)
     print(f"Generated visuals in {time.time() - step_time:.2f} seconds.")
 
     step_time = time.time()  # Reset step timing
@@ -100,6 +101,8 @@ if __name__ == "__main__":
     parser.add_argument("--embed_type", type=str, default="focus")
     parser.add_argument("--bpm", type=int, default=None)
     parser.add_argument("--num_prompt_shuffles", type=int, default=4)
+    parser.add_argument("--num_inference_steps", type=int, default=4)
+    parser.add_argument("--guidance_scale", type=int, default=7)
 
     
 
@@ -123,4 +126,6 @@ if __name__ == "__main__":
          number_of_chromas_focus = args.number_of_chromas_focus,
          embed_type = args.embed_type,
          bpm=args.bpm,
-         num_prompt_shuffles = args.num_prompt_shuffles)
+         num_prompt_shuffles = args.num_prompt_shuffles,
+         num_inference_steps = args.num_inference_steps,
+         guidance_scale = args.guidance_scale)

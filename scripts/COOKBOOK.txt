@@ -61,3 +61,24 @@ python main.py --song "inputs/g2g.mp3" --output "outputs/g2g.mp4" --alpha 0.75 -
 "A devilishly sophisticated demon sitting in the supermarket café, casually tapping their claws and lightly swaying to the rhythm of a background melody, sipping from a cup of ‘Eternal Roast Coffee.’ The scene is calm yet subtly in motion, with pastries levitating in time with the gentle rhythm, while the demon’s quiet dance of tapping and head bobs contrasts with the more chaotic energy of the store around them." \
 "An over-enthusiastic demon in the electronics aisle, dancing in wild circles as they test out an enchanted vacuum cleaner that’s gone rogue. The vacuum spins around in sync with the demon’s frenzied dance, sucking up everything in its path, including cursed trinkets and loose items. The demon’s laughter and the vacuum’s chaotic zigzagging create a humorous, high-energy dance routine in the middle of the aisle." \
 "A sneaky, mischievous demon hiding in the clothing racks, popping out with little dance moves to scare shoppers. Every leap and scare is followed by a rhythmic jig, its cartoonish face twisted in glee as it dances from one hiding spot to the next. Brightly colored scarves and hats swirl in the air, joining the playful dance as the demon hops from one rack to another, blending mischief with rhythm."
+
+
+
+python main.py --song "inputs/comecar.mp3" --output "outputs/cumm2.mp4" --alpha 1.0 --distance 0.3 \--seed 315144 \
+--hop_length 377 --note_type "half" --sigma_time 3 --sigma_chroma 3 --device "cuda" --weightType "float16" --embed_type "focus" \
+--number_of_chromas 12 --number_of_chromas_focus 2 --jitter_strength 0.3 --num_prompt_shuffles 4 --bpm 132 --num_inference_steps 1 --guidance_scale 0 \
+--base_prompt \
+"Dark, sensual demon woman with sleek horns, glowing red eyes, glossy obsidian skin, standing in a dramatic environment. Watercolor style with sharp yet soft tones, realistic and glossy." \
+--target_prompts \
+"Demon woman in a dark forest, mist swirling around her, glowing red eyes piercing the shadows, twisted trees in watercolor strokes." \
+"Demon woman near an erupting volcano, lava glowing behind her, ash swirling, her obsidian skin reflecting fiery tones in sharp detail." \
+"Demon woman standing in a vast desert at dusk, golden light fading, her glowing eyes reflecting the barren land, wind stirring dust." \
+"Demon woman on a moonlit beach, waves softly crashing behind her, her glossy skin reflecting the moonlight, black hair moving gently." \
+"Demon woman on a snowy mountain cliff, wind blowing snow around her, glowing red eyes cutting through the cold mist, sharp peaks in view." \
+"Demon woman before an ancient castle, crumbling walls behind her, ivy creeping up, her black dress flowing, glowing eyes commanding attention." \
+"Demon woman in front of a stormy sea, lightning flashing in the distance, waves crashing, her black hair swirling, eyes glowing intensely." \
+"Demon woman in a misty swamp, her glowing red eyes cutting through fog, twisted trees surrounding her, glossy skin reflecting soft light." \
+"Demon woman in a crumbling cathedral, stained glass shattered behind her, glowing eyes reflecting dim light, sharp features standing out." \
+"Demon woman in an overgrown garden, pale moonlight shining, plants and statues fading into nature, her eyes glowing in the soft mist." \
+"Demon woman standing in a field under a starry sky, wind moving tall grass, her glowing eyes reflecting distant stars, black hair flowing." \
+"Demon woman in a field of lava, sharp rocks surrounding her, molten lava flowing in glowing streams, her obsidian skin reflecting the heat."
