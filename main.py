@@ -16,7 +16,7 @@ dtype_map = {
 
 def main(song, output_path, device, weightType, seed, hop_length, distance, base_prompt, target_prompts, alpha, 
          noteType, sigma_time, sigma_chroma, jitter_strength, number_of_chromas, embed_type,number_of_chromas_focus, bpm,
-         num_prompt_shuffles, guidance_scale, num_inference_steps):
+         num_prompt_shuffles, guidance_scale, num_inference_steps, batch_size):
     
     visualizer = NoiseVisualizer(device=device, weightType=weightType, seed=seed)
     visualizer.loadPipeSd()
@@ -27,7 +27,7 @@ def main(song, output_path, device, weightType, seed, hop_length, distance, base
 
     step_time = time.time()  # Start timing for each step
     print("Getting beat latents")
-    latents = visualizer.getBeatLatents(noteType=noteType, jitter_strength=jitter_strength)
+    latents = visualizer.getBeatLatentsCircle(noteType=noteType, distance=distance, jitter_strength=jitter_strength)
     #latents = visualizer.getBeatLatentsCircle(distance=distance, noteType=noteType, jitter_strength=jitter_strength)
     #latents = visualizer.getBeatLatentsSpiral(distance=distance, noteType=noteType, spiral_rate=spiral_rate)
     print(f"Got beat latents in {time.time() - step_time:.2f} seconds.")
@@ -57,7 +57,8 @@ def main(song, output_path, device, weightType, seed, hop_length, distance, base
     images = visualizer.getVisuals(latents=latents, 
                                    promptEmbeds=prompt_embeds,
                                    num_inference_steps=num_inference_steps, 
-                                   guidance_scale=guidance_scale)
+                                   guidance_scale=guidance_scale,
+                                   batch_size=batch_size)
     print(f"Generated visuals in {time.time() - step_time:.2f} seconds.")
 
     step_time = time.time()  # Reset step timing
@@ -104,6 +105,7 @@ if __name__ == "__main__":
     parser.add_argument("--num_prompt_shuffles", type=int, default=4)
     parser.add_argument("--num_inference_steps", type=int, default=4)
     parser.add_argument("--guidance_scale", type=int, default=7)
+    parser.add_argument("--batch_size", type=int, default=8)
 
     
 
@@ -129,4 +131,5 @@ if __name__ == "__main__":
          bpm=args.bpm,
          num_prompt_shuffles = args.num_prompt_shuffles,
          num_inference_steps = args.num_inference_steps,
-         guidance_scale = args.guidance_scale)
+         guidance_scale = args.guidance_scale,
+         batch_size=args.batch_size)

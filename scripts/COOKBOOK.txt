@@ -85,9 +85,9 @@ python main.py --song "inputs/comecar.mp3" --output "outputs/cumm2.mp4" --alpha 
 
 
 
-python main.py --song "inputs/drumsDeath.mp3" --output "outputs/drumsDeath.mp4" --alpha 0.75 --distance 0.3 \--seed 315144 \
+python main.py --song "inputs/drumsDeath.mp3" --output "outputs/drumsDeath23.mp4" --alpha 0.75 --distance 0.3 \--seed 315144 \
 --hop_length 368 --note_type "quarter" --sigma_time 2 --sigma_chroma 2 --device "mps" --weightType "float16" --embed_type "cum" \
---number_of_chromas 12 --number_of_chromas_focus 2 --jitter_strength 0.0 --num_prompt_shuffles 4 --num_inference_steps 1 --guidance_scale 0 \
+--number_of_chromas 12 --number_of_chromas_focus 4 --jitter_strength 0.0 --num_prompt_shuffles 4 --num_inference_steps 1 --guidance_scale 0 --batch_size 16 \
 --base_prompt \
 "Dark, sensual demon woman with sleek horns, glowing red eyes, glossy obsidian skin, standing in a dramatic environment. Watercolor style with sharp yet soft tones, realistic and glossy." \
 --target_prompts \

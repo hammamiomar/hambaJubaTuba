@@ -13,6 +13,4 @@ accelerate
 peft
 moviepy
 librosa
-torchvision
-torchaudio
 controlnet_aux

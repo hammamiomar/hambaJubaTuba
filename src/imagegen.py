@@ -53,7 +53,7 @@ class NoiseVisualizer:
         self.y = y
         
         y_harmonic, y_percussive = librosa.effects.hpss(y)
-        oenv = librosa.onset.onset_strength(y=y_percussive, sr=sr, hop_length=self.hop_length)
+        oenv = librosa.onset.onset_strength(y=y, sr=sr, hop_length=self.hop_length)
 
         # Latent generaton
         if bpm:
@@ -61,7 +61,7 @@ class NoiseVisualizer:
         else:
             self.tempo, self.beat_frames = librosa.beat.beat_track(y=y_percussive, sr=sr, hop_length=self.hop_length)
         
-        melSpec = librosa.feature.melspectrogram(y=y_percussive,sr=sr, n_mels = 256, hop_length=self.hop_length)
+        melSpec = librosa.feature.melspectrogram(y=y,sr=sr, n_mels = 256, hop_length=self.hop_length)
         self.melSpec = np.sum(melSpec,axis=0)
         
         
@@ -84,80 +84,89 @@ class NoiseVisualizer:
         self.steps = self.melSpec.shape[0]
         self.number_of_chromas = number_of_chromas  # Store for use in getPromptEmbeds
         
-    # def getEasedBeats(self, noteType):  # for circle..
-    #     def cubic_in_out_numpy(t):
-    #         return np.where(t < 0.5, 4 * t**3, 1 - (-2 * t + 2)**3 / 2)
+    def getEasedBeats(self, noteType):  # for circle..
+        def cubic_in_out_numpy(t):
+            return np.where(t < 0.5, 4 * t**3, 1 - (-2 * t + 2)**3 / 2)
 
-    #     if noteType == "half":
-    #         beat_frames = self.beat_frames[::2]
-    #     elif noteType == "whole":
-    #         beat_frames = self.beat_frames[::4]
-    #     else:
-    #         beat_frames = self.beat_frames
+        if noteType == "half":
+            beat_frames = self.beat_frames[::2]
+        elif noteType == "whole":
+            beat_frames = self.beat_frames[::4]
+        else:
+            beat_frames = self.beat_frames
             
-    #     # Initialize output array
-    #     output_array = np.zeros(self.steps, float)
+        # Initialize output array
+        output_array = np.zeros(self.steps, float)
 
-    #     # Normalize the mel spectrogram values at the beat frames and set them in the output array
-    #     output_array[beat_frames] = librosa.util.normalize(self.melSpec[beat_frames])
+        # Normalize the mel spectrogram values at the beat frames and set them in the output array
+        output_array[beat_frames] = librosa.util.normalize(self.melSpec)[beat_frames]
 
-    #     # Interpolate between the beat frames
-    #     last_beat_idx = None
-    #     for current_idx in beat_frames:
-    #         if last_beat_idx is not None:
-    #             # Interpolate between the previous beat and current beat
-    #             for j in range(last_beat_idx + 1, current_idx):
-    #                 t = (j - last_beat_idx) / (current_idx - last_beat_idx)
-    #                 eased_value = cubic_in_out_numpy(np.array(t))
-    #                 output_array[j] = eased_value
-    #         last_beat_idx = current_idx
+        # Interpolate between the beat frames
+        last_beat_idx = None
+        for current_idx in beat_frames:
+            if last_beat_idx is not None:
+                # Interpolate between the previous beat and current beat
+                for j in range(last_beat_idx + 1, current_idx):
+                    t = (j - last_beat_idx) / (current_idx - last_beat_idx)
+                    eased_value = cubic_in_out_numpy(np.array(t))
+                    output_array[j] = eased_value
+            last_beat_idx = current_idx
 
-    #     return torch.tensor(output_array, dtype=self.weightType)
-    # def getBeatLatentsCircle(self, distance, noteType, jitter_strength): 
-    #     # shape: (batch, latent channels, height, width)
-    #     latent_size = self.pipe.unet.config.sample_size
-    #     latent_channels = self.pipe.unet.in_channels
-    #     shape = (1, latent_channels, latent_size, latent_size)
-        
-    #     # Initialize random noise for X and Y coordinates of the walk
-    #     walkNoiseX = torch.randn(shape, dtype=self.weightType, device=self.device)
-    #     walkNoiseY = torch.randn(shape, dtype=self.weightType, device=self.device)
-        
-    #     # Apply the easing values to the scales (mapping easing values to noise)
-    #     easing_values = self.getEasedBeats(noteType=noteType).to(self.device)
-        
-    #     # Compute cumulative sum of easing values to get the angle
-    #     # Adjust the scaling factor to control speed of rotation
-    #     scaling_factor = distance * 2 * math.pi  # Multiply by 2π for full rotations
-    #     angles = torch.cumsum(easing_values, dim=0) * scaling_factor
-        
-    #     # # Optionally add some jitter to the angles to add randomness
-    #     jitter = torch.randn_like(angles) * jitter_strength
-    #     angles += jitter
-        
-    #     # Compute cos and sin of the angles
-    #     walkScaleX = torch.cos(angles)
-    #     walkScaleY = torch.sin(angles)
-        
-    #     # Expand walkScaleX and walkScaleY to match dimensions for multiplication
-    #     walkScaleX = walkScaleX.view(-1, 1, 1, 1)
-    #     walkScaleY = walkScaleY.view(-1, 1, 1, 1)
-        
-    #     # Generate the noise tensors based on the interpolated scales
-    #     noiseX = walkScaleX * walkNoiseX
-    #     noiseY = walkScaleY * walkNoiseY
-        
-    #     # Add the noise contributions for X and Y to create the latent walk
-    #     latents = noiseX + noiseY  # Shape: (steps, 4, 64, 64)
-    #     return latents
-
-    def getBeatLatents(self, noteType, jitter_strength):
-        # shape: (latent channels, height, width)
+        return torch.tensor(output_array, dtype=self.weightType)
+    def getBeatLatentsCircle(self, distance, noteType, jitter_strength): 
+        # shape: (batch, latent channels, height, width)
         latent_size = self.pipe.unet.config.sample_size
         latent_channels = self.pipe.unet.in_channels
-        shape = (latent_channels, latent_size, latent_size)
+        shape = (1, latent_channels, latent_size, latent_size)
         
-        # Get beat frames based on noteType
+        # Initialize random noise for X and Y coordinates of the walk
+        walkNoiseX = torch.randn(shape, dtype=self.weightType, device=self.device)
+        walkNoiseY = torch.randn(shape, dtype=self.weightType, device=self.device)
+        
+        # Apply the easing values to the scales (mapping easing values to noise)
+        easing_values = self.getEasedBeats(noteType=noteType).to(self.device)
+        
+        # Compute cumulative sum of easing values to get the angle
+        # Adjust the scaling factor to control speed of rotation
+        scaling_factor = distance * 2 * math.pi  # Multiply by 2π for full rotations
+        angles = torch.cumsum(easing_values, dim=0) * scaling_factor
+        
+        # # Optionally add some jitter to the angles to add randomness
+        jitter = torch.randn_like(angles) * jitter_strength
+        angles += jitter
+        
+        # Compute cos and sin of the angles
+        walkScaleX = torch.cos(angles)
+        walkScaleY = torch.sin(angles)
+        
+        # Expand walkScaleX and walkScaleY to match dimensions for multiplication
+        walkScaleX = walkScaleX.view(-1, 1, 1, 1)
+        walkScaleY = walkScaleY.view(-1, 1, 1, 1)
+        
+        # Generate the noise tensors based on the interpolated scales
+        noiseX = walkScaleX * walkNoiseX
+        noiseY = walkScaleY * walkNoiseY
+        
+        # Add the noise contributions for X and Y to create the latent walk
+        latents = noiseX + noiseY  # Shape: (steps, 4, 64, 64)
+        return latents
+
+    def getBeatLatentsCircleGPT(self, distance, noteType, jitter_strength):
+        # Initialize noise tensors
+        latent_size = self.pipe.unet.config.sample_size
+        latent_channels = self.pipe.unet.in_channels
+        shape = (1, latent_channels, latent_size, latent_size)
+        walkNoiseX = torch.randn(shape, dtype=self.weightType, device=self.device)
+        walkNoiseY = torch.randn(shape, dtype=self.weightType, device=self.device)
+
+        # Get normalized melspec values as a tensor
+        melspec_values = torch.tensor(
+            librosa.util.normalize(self.melSpec),
+            dtype=self.weightType,
+            device=self.device
+        )
+
+        # Select beat frames based on note type
         if noteType == "half":
             beat_frames = self.beat_frames[::2]
         elif noteType == "whole":
@@ -165,64 +174,79 @@ class NoiseVisualizer:
         else:
             beat_frames = self.beat_frames
 
-        # Get mel spectrogram values at beat frames and normalize them
-        mel_values = self.melSpec[beat_frames]
-        mel_values = librosa.util.normalize(mel_values)
-        mel_values = torch.tensor(mel_values, dtype=self.weightType, device=self.device)
-        
-        num_beats = len(beat_frames)
-        # Initialize the latents array
-        latents = torch.zeros((self.steps, *shape), dtype=self.weightType, device=self.device)
-        
-        # Initialize the starting latent vector
-        current_latent = torch.randn(shape, dtype=self.weightType, device=self.device)
-        
-        # Easing function
-        def cubic_in_out_numpy(t):
-            return np.where(t < 0.5, 4 * t**3, 1 - (-2 * t + 2)**3 / 2)
-        
-        # Handle frames before the first beat
-        if beat_frames[0] > 0:
-            latents[:beat_frames[0]] = current_latent
-        
-        # Interpolate between beats based on mel spectrogram differences
-        for i in range(num_beats - 1):
-            start_idx = beat_frames[i]
-            end_idx = beat_frames[i+1]
-            num_frames = end_idx - start_idx
-            
-            # Compute the difference in mel spectrogram values
-            mel_diff = mel_values[i+1] - mel_values[i]
-            # Determine the interpolation scale based on mel_diff
-            interpolation_scale = torch.abs(mel_diff)
-            
-            # Generate a random direction vector for interpolation
-            random_direction = torch.randn(shape, dtype=self.weightType, device=self.device)
-            random_direction = random_direction / torch.norm(random_direction)
-            
-            # Compute the target latent vector
-            target_latent = current_latent + interpolation_scale * random_direction
-            
-            # Interpolate between current and target latent vectors
-            for j in range(num_frames + 1):
-                frame_idx = start_idx + j
-                t = j / num_frames
-                eased_t = cubic_in_out_numpy(np.array(t))
-                eased_t = torch.tensor(eased_t, dtype=self.weightType, device=self.device)
-                interpolated_latent = (1 - eased_t) * current_latent + eased_t * target_latent
-                latents[frame_idx] = interpolated_latent
-            
-            # Update current latent for the next beat
-            current_latent = target_latent
+        # Initialize angles tensor
+        angles = torch.zeros(self.steps, dtype=self.weightType, device=self.device)
+
+        # Define the cubic in-out easing function
+        def cubic_in_out_torch(t):
+            return torch.where(
+                t < 0.5,
+                4 * t**3,
+                1 - (-2 * t + 2)**3 / 2
+            )
+
+        # Loop over beat intervals
+        for i in range(len(beat_frames) - 1):
+            start_frame = beat_frames[i]
+            end_frame = beat_frames[i + 1]
+            duration = end_frame - start_frame
+
+            if duration <= 0:
+                continue  # Skip if duration is zero or negative
+
+            # Get melspec value at the end of the beat interval
+            melspec_value = melspec_values[end_frame]
+
+            # Total angle change over this beat interval
+            total_angle_change = melspec_value * distance * 2 * math.pi
+
+            # Interpolate angle change over the interval with easing
+            t = torch.linspace(0, 1, steps=duration, device=self.device)
+            eased_t = cubic_in_out_torch(t)
+            angle_change = total_angle_change * eased_t
+
+            # Update angles for this interval
+            angles[start_frame:end_frame] = angle_change
 
         # Handle frames after the last beat
         if beat_frames[-1] < self.steps - 1:
-            latents[beat_frames[-1]+1:] = current_latent
+            start_frame = beat_frames[-1]
+            end_frame = self.steps - 1  # Ensure we don't exceed array bounds
+            duration = end_frame - start_frame
 
-        # Optionally add jitter
-        if jitter_strength > 0:
-            jitter = torch.randn_like(latents) * jitter_strength
-            latents += jitter
+            if duration > 0:
+                # Get melspec value at the end frame
+                melspec_value = melspec_values[end_frame]
+
+                # Total angle change over this interval
+                total_angle_change = melspec_value * distance * 2 * math.pi
+
+                # Interpolate angle change over the interval with easing
+                t = torch.linspace(0, 1, steps=duration, device=self.device)
+                eased_t = cubic_in_out_torch(t)
+                angle_change = total_angle_change * eased_t
+
+                # Update angles for this interval
+                angles[start_frame:end_frame] = angle_change
+
+        # Add jitter to the angles for randomness
+        jitter = torch.randn_like(angles) * jitter_strength
+        #angles += jitter
+
+        # Compute cosine and sine of the angles
+        walkScaleX = torch.cos(angles)
+        walkScaleY = torch.sin(angles)
+
+        # Reshape for broadcasting
+        walkScaleX = walkScaleX.view(-1, 1, 1, 1)
+        walkScaleY = walkScaleY.view(-1, 1, 1, 1)
+
+        # Generate the noise tensors based on the scales
+        noiseX = walkScaleX * walkNoiseX
+        noiseY = walkScaleY * walkNoiseY
+
+        # Combine the noise contributions to create the latent walk
+        latents = noiseX + noiseY
 
         return latents
 
@@ -254,7 +278,7 @@ class NoiseVisualizer:
         chroma = self.chroma_cq.T  # shape: (numFrames, 12)
         numFrames = chroma.shape[0]
 
-        top_chromaOnset = np.argmax(self.chroma_cq_delta, axis=0)
+        top_chromaOnset = np.argmax(np.abs(self.chroma_cq_delta), axis=0)
         # Onset frames and dominant chromas
         onset_frames = self.onset_bt
         dominant_chromas = top_chromaOnset[self.onset_bt]
@@ -307,7 +331,7 @@ class NoiseVisualizer:
         dominant_chroma_per_frame[start_frame:end_frame] = dominant_chroma
 
         # Apply temporal smoothing to alphas (optional)
-        alphas = gaussian_filter1d(alphas, sigma=sigma)
+        #alphas = gaussian_filter1d(alphas, sigma=sigma)
 
         # Get baseEmbeds and targetEmbeds
         baseInput = self.tokenizer(
@@ -347,7 +371,7 @@ class NoiseVisualizer:
             else:
                 raise ValueError(f"Unknown interpolation method: {method}")
 
-            interpolatedEmbedsAll.append(interpolatedEmbed.unsqueeze(0))  # shape: (1, seq_len, hidden_size)
+            interpolatedEmbedsAll.append(interpolatedEmbed)  # shape: (1, seq_len, hidden_size)
 
         interpolatedEmbeds = torch.stack(interpolatedEmbedsAll)  # shape: (numFrames, 1, seq_len, hidden_size)
 
@@ -401,7 +425,7 @@ class NoiseVisualizer:
 
             # Normalize chroma magnitudes per frame to sum to alpha
             magnitudes_sum = chroma_magnitudes.sum(axis=1, keepdims=True) + 1e-8  # Avoid division by zero
-            alpha_values = (chroma_magnitudes / magnitudes_sum) * alpha  # shape: (interval_length, number_of_chromas) # TODO CHECK IF TIMES ALPHA NEEDED>??
+            alpha_values = (chroma_magnitudes / magnitudes_sum)  # shape: (interval_length, number_of_chromas) # TODO CHECK IF TIMES ALPHA NEEDED>??
 
             # Assign alpha_values and chroma indices to frames
             alphas[start_frame:end_frame, :] = alpha_values
@@ -414,7 +438,7 @@ class NoiseVisualizer:
 
         chroma_magnitudes = chroma[start_frame:end_frame, chroma_indices]  # shape: (interval_length, number_of_chromas)
         magnitudes_sum = chroma_magnitudes.sum(axis=1, keepdims=True) + 1e-8
-        alpha_values = (chroma_magnitudes / magnitudes_sum) * alpha
+        alpha_values = (chroma_magnitudes / magnitudes_sum)
 
         alphas[start_frame:end_frame, :] = alpha_values
         chromas_per_frame[start_frame:end_frame, :] = chroma_indices.reshape(1, number_of_chromas)
@@ -425,12 +449,12 @@ class NoiseVisualizer:
         # Axis 0: Time (frames), Axis 1: Chroma
         alphas_smoothed = gaussian_filter(alphas, sigma=(sigma_time, sigma_chroma), mode='reflect') # alphas are the chroma magnitudes between onset frames, normalized per onset to onset
 
-        # **Re-normalize Alphas Per Frame to Ensure the Sum Equals alpha**
-        magnitudes_sum = alphas_smoothed.sum(axis=1, keepdims=True) + 1e-8  # Avoid division by zero  TODO: IS THIS NEEDED? ?? NO!!!???
-        alphas_normalized = (alphas_smoothed / magnitudes_sum) * alpha  # shape: (numFrames, number_of_chromas)
+        # # **Re-normalize Alphas Per Frame to Ensure the Sum Equals alpha**
+        # magnitudes_sum = alphas_smoothed.sum(axis=1, keepdims=True) + 1e-8  # Avoid division by zero  TODO: IS THIS NEEDED? ?? NO!!!???
+        # alphas_normalized = (alphas_smoothed / magnitudes_sum) * alpha  # shape: (numFrames, number_of_chromas)
 
-        # **Update the Alphas Array with the Smoothed and Normalized Alphas**
-        alphas = alphas_normalized
+        # # **Update the Alphas Array with the Smoothed and Normalized Alphas**
+        # alphas = alphas_normalized
 
         # **Proceed with Embedding Interpolation as Before**
 
@@ -469,7 +493,7 @@ class NoiseVisualizer:
                 targetEmbeds.to(self.device)
                         
             alpha_values = alphas[frame, :]  # shape: (number_of_chromas,)
-            total_alpha = alpha_values.sum() # TODO IS THIS NEEEDED??? NO!!
+            total_alpha = alpha_values.sum() # TODO IS THIS NEEEDED??? 
             if total_alpha > alpha:
                 alpha_values = (alpha_values / total_alpha) * alpha
                 total_alpha = alpha
@@ -485,14 +509,15 @@ class NoiseVisualizer:
             for n in range(number_of_chromas):
                 target_embed = targetEmbeds[chroma_indices[n]]  # shape: (seq_len, hidden_size)
                 interpolatedEmbed += alpha_values[n] * target_embed 
-
-            interpolatedEmbedsAll.append(interpolatedEmbed.unsqueeze(0))  # shape: (1, seq_len, hidden_size)
+            
+            interpolatedEmbed = self.slerp(baseEmbeds,interpolatedEmbed,total_alpha)
+            interpolatedEmbedsAll.append(interpolatedEmbed)  # shape: (1, seq_len, hidden_size)
 
         interpolatedEmbeds = torch.stack(interpolatedEmbedsAll)  # shape: (numFrames, seq_len, hidden_size)
 
         return interpolatedEmbeds
     
-    def getVisuals(self, latents, promptEmbeds, num_inference_steps=1, batch_size=1, guidance_scale=7):
+    def getVisuals(self, latents, promptEmbeds, num_inference_steps=1, batch_size=2, guidance_scale=0):
         
         
         negativePrompt = self.tokenizer(
@@ -516,8 +541,8 @@ class NoiseVisualizer:
         num_frames = self.steps
         
         for i in tqdm.tqdm(range(0, num_frames, batch_size)):
-            frames = self.pipe(prompt_embeds=promptEmbeds[i],
-                               negative_prompt_embeds=negativeEmbeds,
+            frames = self.pipe(prompt_embeds=promptEmbeds[i:i + batch_size],
+                               #negative_prompt_embeds=negativeEmbeds,
                                guidance_scale=guidance_scale,
                                num_inference_steps=num_inference_steps,
                                latents=latents[i:i+batch_size],
