@@ -2,7 +2,7 @@ einops
 numpy
 opencv-python
 pillow
-scipy
+scipy==1.11.1
 timm
 tqdm
 diffusers
@@ -13,4 +13,3 @@ accelerate
 peft
 moviepy
 librosa
-controlnet_aux

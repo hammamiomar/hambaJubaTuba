@@ -27,7 +27,7 @@ def main(song, output_path, device, weightType, seed, hop_length, distance, base
 
     step_time = time.time()  # Start timing for each step
     print("Getting beat latents")
-    latents = visualizer.getBeatLatentsCircle(noteType=noteType, distance=distance, jitter_strength=jitter_strength)
+    latents = visualizer.getBeatLatentsCircleGPT(noteType=noteType, distance=distance, jitter_strength=jitter_strength)
     #latents = visualizer.getBeatLatentsCircle(distance=distance, noteType=noteType, jitter_strength=jitter_strength)
     #latents = visualizer.getBeatLatentsSpiral(distance=distance, noteType=noteType, spiral_rate=spiral_rate)
     print(f"Got beat latents in {time.time() - step_time:.2f} seconds.")
