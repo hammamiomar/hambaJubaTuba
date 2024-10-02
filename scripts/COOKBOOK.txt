@@ -82,3 +82,43 @@ python main.py --song "inputs/comecar.mp3" --output "outputs/cumm2.mp4" --alpha 
 "Demon woman in an overgrown garden, pale moonlight shining, plants and statues fading into nature, her eyes glowing in the soft mist." \
 "Demon woman standing in a field under a starry sky, wind moving tall grass, her glowing eyes reflecting distant stars, black hair flowing." \
 "Demon woman in a field of lava, sharp rocks surrounding her, molten lava flowing in glowing streams, her obsidian skin reflecting the heat."
+
+
+
+python main.py --song "inputs/drumsDeath.mp3" --output "outputs/drumsDeath233das.mp4" --alpha 0.9 --distance 0.4 \--seed 315144 \
+--hop_length 368 --note_type "quarter" --sigma_time 2 --sigma_chroma 2 --device "mps" --weightType "float16" --embed_type "focus" \
+--number_of_chromas 12 --number_of_chromas_focus 4 --jitter_strength 0.0 --num_prompt_shuffles 4 --num_inference_steps 1 --guidance_scale 0 --batch_size 8 \
+--base_prompt \
+"Dark, sensual demon woman with sleek horns, glowing red eyes, glossy obsidian skin, standing in a dramatic environment. Watercolor style with sharp yet soft tones, realistic and glossy." \
+--target_prompts \
+"Demon woman in a dark forest, mist swirling around her, glowing red eyes piercing the shadows, twisted trees in watercolor strokes." \
+"Demon woman near an erupting volcano, lava glowing behind her, ash swirling, her obsidian skin reflecting fiery tones in sharp detail." \
+"Demon woman standing in a vast desert at dusk, golden light fading, her glowing eyes reflecting the barren land, wind stirring dust." \
+"Demon woman on a moonlit beach, waves softly crashing behind her, her glossy skin reflecting the moonlight, black hair moving gently." \
+"Demon woman on a snowy mountain cliff, wind blowing snow around her, glowing red eyes cutting through the cold mist, sharp peaks in view." \
+"Demon woman before an ancient castle, crumbling walls behind her, ivy creeping up, her black dress flowing, glowing eyes commanding attention." \
+"Demon woman in front of a stormy sea, lightning flashing in the distance, waves crashing, her black hair swirling, eyes glowing intensely." \
+"Demon woman in a misty swamp, her glowing red eyes cutting through fog, twisted trees surrounding her, glossy skin reflecting soft light." \
+"Demon woman in a crumbling cathedral, stained glass shattered behind her, glowing eyes reflecting dim light, sharp features standing out." \
+"Demon woman in an overgrown garden, pale moonlight shining, plants and statues fading into nature, her eyes glowing in the soft mist." \
+"Demon woman standing in a field under a starry sky, wind moving tall grass, her glowing eyes reflecting distant stars, black hair flowing." \
+"Demon woman in a field of lava, sharp rocks surrounding her, molten lava flowing in glowing streams, her obsidian skin reflecting the heat."
+
+python mainCtrl.py --song "inputs/fkaVid.mp4" --output "outputs/fkaVidCtrl.mp4" --alpha 0.9 --distance 0.4 \--seed 36615144 \
+--hop_length 368 --note_type "quarter" --sigma_time 2 --sigma_chroma 2 --device "mps" --weightType "float16" --embed_type "focus" \
+--number_of_chromas 12 --number_of_chromas_focus 4 --jitter_strength 0.0 --num_prompt_shuffles 4 --num_inference_steps 1 --guidance_scale 0 --batch_size 8 \
+--base_prompt \
+"Dark, sensual demon woman with sleek horns, glowing red eyes, glossy obsidian skin, standing in a dramatic environment. Watercolor style with sharp yet soft tones, realistic and glossy." \
+--target_prompts \
+"Demon woman in a dark forest, mist swirling around her, glowing red eyes piercing the shadows, twisted trees in watercolor strokes." \
+"Demon woman near an erupting volcano, lava glowing behind her, ash swirling, her obsidian skin reflecting fiery tones in sharp detail." \
+"Demon woman standing in a vast desert at dusk, golden light fading, her glowing eyes reflecting the barren land, wind stirring dust." \
+"Demon woman on a moonlit beach, waves softly crashing behind her, her glossy skin reflecting the moonlight, black hair moving gently." \
+"Demon woman on a snowy mountain cliff, wind blowing snow around her, glowing red eyes cutting through the cold mist, sharp peaks in view." \
+"Demon woman before an ancient castle, crumbling walls behind her, ivy creeping up, her black dress flowing, glowing eyes commanding attention." \
+"Demon woman in front of a stormy sea, lightning flashing in the distance, waves crashing, her black hair swirling, eyes glowing intensely." \
+"Demon woman in a misty swamp, her glowing red eyes cutting through fog, twisted trees surrounding her, glossy skin reflecting soft light." \
+"Demon woman in a crumbling cathedral, stained glass shattered behind her, glowing eyes reflecting dim light, sharp features standing out." \
+"Demon woman in an overgrown garden, pale moonlight shining, plants and statues fading into nature, her eyes glowing in the soft mist." \
+"Demon woman standing in a field under a starry sky, wind moving tall grass, her glowing eyes reflecting distant stars, black hair flowing." \
+"Demon woman in a field of lava, sharp rocks surrounding her, molten lava flowing in glowing streams, her obsidian skin reflecting the heat."

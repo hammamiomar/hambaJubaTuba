@@ -19,15 +19,16 @@ def main(song, output_path, device, weightType, seed, hop_length, distance, base
          num_prompt_shuffles, guidance_scale, num_inference_steps, batch_size):
     
     visualizer = NoiseVisualizer(device=device, weightType=weightType, seed=seed)
-    visualizer.loadPipeSd()
+    visualizer.loadPipeSdCtrl()
     print(f'loaded {device} as device')
     start_time = time.time()  # Start total timing
-    visualizer.loadSong(song, hop_length=hop_length, number_of_chromas=number_of_chromas, bpm=bpm)
+    ctrlFrames = visualizer.loadVideo(song)
     print(f"Loaded song in {time.time() - start_time:.2f} seconds.")
 
     step_time = time.time()  # Start timing for each step
     print("Getting beat latents")
-    latents = visualizer.getBeatLatentsCircleGPT(noteType=noteType, distance=distance, jitter_strength=jitter_strength)
+    width, height = ctrlFrames[0].size
+    latents = visualizer.getBeatLatentsCircleGPT(noteType=noteType, distance=distance, jitter_strength=jitter_strength, height=height,width=width)
     #latents = visualizer.getBeatLatentsCircle(distance=distance, noteType=noteType, jitter_strength=jitter_strength)
     #latents = visualizer.getBeatLatentsSpiral(distance=distance, noteType=noteType, spiral_rate=spiral_rate)
     print(f"Got beat latents in {time.time() - step_time:.2f} seconds.")
@@ -54,8 +55,9 @@ def main(song, output_path, device, weightType, seed, hop_length, distance, base
     print(f"Got prompt embeds in {time.time() - step_time:.2f} seconds.")
 
     step_time = time.time()  # Reset step timing
-    images = visualizer.getVisuals(latents=latents, 
+    images = visualizer.getVisualsCtrl(latents=latents, 
                                    promptEmbeds=prompt_embeds,
+                                   ctrlFrames=ctrlFrames,
                                    num_inference_steps=num_inference_steps, 
                                    guidance_scale=guidance_scale,
                                    batch_size=batch_size)
