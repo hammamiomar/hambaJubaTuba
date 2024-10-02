@@ -1,10 +1,10 @@
 import torch, torchvision
-from torch import FloatTensor, LongTensor, Tensor, Size, lerp, zeros_like
-from torch.linalg import norm
 from scipy.ndimage import gaussian_filter1d
 from scipy.ndimage import gaussian_filter
+import os
 
-from diffusers import StableDiffusionPipeline, UNet2DConditionModel
+from diffusers import StableDiffusionPipeline, AutoencoderKL, StableDiffusionControlNetPipeline, ControlNetModel
+from controlnet_aux import LineartDetector
 import librosa
 import tqdm as tqdm
 from PIL import Image
@@ -12,32 +12,34 @@ import numpy as np
 import moviepy.editor as mpy
 import math
 
-# import sys
-# sys.path.append('Instaflow/code/') 
-
-# from diffusers import StableDiffusionPipeline, UNet2DConditionModel
-# from utils_perflow import merge_delta_weights_into_unet
-# from scheduler_perflow import PeRFlowScheduler
-
-from InstaFlow.code.pipeline_rf import RectifiedFlowPipeline
-
 class NoiseVisualizer:
     def __init__(self, device="mps", weightType=torch.float16, seed=42069):
         torch.manual_seed(seed)
         self.device = device
         self.weightType = weightType
-        # self.pipe = StableDiffusionPipeline.from_pretrained("IDKiro/sdxs-512-dreamshaper", torch_dtype=weightType)
-        # self.textEncoder = self.pipe.text_encoder
-        # self.tokenizer = self.pipe.tokenizer
     
-    def loadPipeSd(self, model_path = "Lykon/dreamshaper-8"):
-        # delta_weights = UNet2DConditionModel.from_pretrained("hansyan/perflow-sd15-delta-weights", torch_dtype=self.weightType , variant="v0-1",).state_dict()
-        # pipe = StableDiffusionPipeline.from_pretrained(model_path, torch_dtype=self.weightType)
-        # self.pipe = merge_delta_weights_into_unet(pipe, delta_weights)
-        # self.pipe.scheduler = PeRFlowScheduler.from_config(pipe.scheduler.config, prediction_type="diff_eps", num_time_windows=4)
-        
-        self.pipe = RectifiedFlowPipeline.from_pretrained("XCLIU/instaflow_0_9B_from_sd_1_5", torch_dtype=self.weightType) 
+    def loadPipeSd(self):
 
+        self.pipe = StableDiffusionPipeline.from_pretrained("IDKiro/sdxs-512-dreamshaper", torch_dtype=self.weightType)
+        vae_large = AutoencoderKL.from_pretrained("IDKiro/sdxs-512-dreamshaper", subfolder="vae_large")
+        self.pipe.vae = vae_large
+        
+        self.textEncoder = self.pipe.text_encoder
+        self.tokenizer = self.pipe.tokenizer
+        self.pipe.safety_checker = None
+        self.pipe.set_progress_bar_config(disable=True)
+        self.pipe.to(self.device)
+        
+    def loadPipeSdCtrl(self):
+        controlnet = ControlNetModel.from_pretrained(
+            "IDKiro/sdxs-512-dreamshaper-sketch", torch_dtype=self.weightType
+        ).to(self.device)
+        self.preprocessor = LineartDetector.from_pretrained("lllyasviel/Annotators")
+        self.preprocessor.to(self.device)
+        
+        self.pipe = StableDiffusionControlNetPipeline.from_pretrained("IDKiro/sdxs-512-dreamshaper", torch_dtype=self.weightType, controlnet=controlnet)
+        vae_large = AutoencoderKL.from_pretrained("IDKiro/sdxs-512-dreamshaper", subfolder="vae_large")
+        self.pipe.vae = vae_large
         
         self.textEncoder = self.pipe.text_encoder
         self.tokenizer = self.pipe.tokenizer
@@ -45,9 +47,8 @@ class NoiseVisualizer:
         self.pipe.set_progress_bar_config(disable=True)
         self.pipe.to(self.device)
 
-        
-    def loadSong(self,file,hop_length, number_of_chromas, bpm=None):
-        y, sr = librosa.load(file) # 3 min 52 sec
+    def loadSong(self,file,hop_length, number_of_chromas=12, bpm=None):
+        y, sr = librosa.load(file, sr=22050) # 3 min 52 sec
         self.hop_length=hop_length
         self.sr = sr
         self.y = y
@@ -83,6 +84,22 @@ class NoiseVisualizer:
 
         self.steps = self.melSpec.shape[0]
         self.number_of_chromas = number_of_chromas  # Store for use in getPromptEmbeds
+    
+    def loadVideo(self, file):
+        clip = mpy.VideoFileClip(file)
+        clip.audio.write_audiofile("temp.wav")
+        
+        self.hop_length = int(22050 / clip.fps)
+        self.loadSong("temp.wav",self.hop_length)
+        
+        totalFrames = int(clip.fps * clip.duration)
+        ctrlFrames=[]
+        for frame in tqdm.tqdm(clip.iter_frames(), total=totalFrames):
+            ctrlFrames.append(self.preprocessor(Image.fromarray(frame), image_resolution=512, output_type="pil"))
+        
+        os.remove("temp.wav")
+        
+        return ctrlFrames
         
     def getEasedBeats(self, noteType):  # for circle..
         def cubic_in_out_numpy(t):
@@ -113,11 +130,11 @@ class NoiseVisualizer:
             last_beat_idx = current_idx
 
         return torch.tensor(output_array, dtype=self.weightType)
-    def getBeatLatentsCircle(self, distance, noteType, jitter_strength): 
+    def getBeatLatentsCircle(self, distance, noteType, jitter_strength, height=512, width=512): 
         # shape: (batch, latent channels, height, width)
-        latent_size = self.pipe.unet.config.sample_size
+        
         latent_channels = self.pipe.unet.in_channels
-        shape = (1, latent_channels, latent_size, latent_size)
+        shape = (1, latent_channels, height/8, width/8)
         
         # Initialize random noise for X and Y coordinates of the walk
         walkNoiseX = torch.randn(shape, dtype=self.weightType, device=self.device)
@@ -151,11 +168,10 @@ class NoiseVisualizer:
         latents = noiseX + noiseY  # Shape: (steps, 4, 64, 64)
         return latents
 
-    def getBeatLatentsCircleGPT(self, distance, noteType, jitter_strength):
+    def getBeatLatentsCircleGPT(self, distance, noteType, jitter_strength, height=512, width=512):
         # Initialize noise tensors
-        latent_size = self.pipe.unet.config.sample_size
         latent_channels = self.pipe.unet.in_channels
-        shape = (1, latent_channels, latent_size, latent_size)
+        shape = (1, latent_channels, height//8, width//8)
         walkNoiseX = torch.randn(shape, dtype=self.weightType, device=self.device)
         walkNoiseY = torch.randn(shape, dtype=self.weightType, device=self.device)
 
@@ -550,4 +566,38 @@ class NoiseVisualizer:
             allFrames.extend(frames)
         return allFrames
         
+    def getVisualsCtrl(self, latents, promptEmbeds, ctrlFrames, num_inference_steps=1, batch_size=2, guidance_scale=0):
         
+        
+        negativePrompt = self.tokenizer(
+            "blurry, low resolution, bad anatomy, deformed, disfigured, extra limbs, extra fingers, missing limbs, bad proportions, bad composition, out of frame, watermark, text, grainy, poorly drawn face",
+            return_tensors="pt",
+            padding="max_length",
+            truncation=True,
+            max_length=77,
+        ).input_ids.to(self.device)
+        negativeEmbeds = self.textEncoder(negativePrompt)[0]
+        negativeEmbeds.to(self.device)
+        
+        #self.pipe.vae = self.vae
+        self.pipe.to(device=self.device, dtype=self.weightType)
+        
+        num_frames = len(ctrlFrames)
+        latents = latents[:num_frames]
+        promptEmbeds = promptEmbeds[:num_frames]
+        
+        latents.to(self.device)
+        promptEmbeds.to(self.device)
+        
+        allFrames=[]
+        
+        for i in tqdm.tqdm(range(0, num_frames, batch_size)):
+            frames = self.pipe(prompt_embeds=promptEmbeds[i:i + batch_size],
+                               #negative_prompt_embeds=negativeEmbeds,
+                               guidance_scale=guidance_scale,
+                               num_inference_steps=num_inference_steps,
+                               latents=latents[i:i+batch_size],
+                               image=ctrlFrames[i:i+batch_size],
+                               output_type="pil").images
+            allFrames.extend(frames)
+        return allFrames
