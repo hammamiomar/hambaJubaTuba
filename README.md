@@ -8,6 +8,7 @@
 
 In the aims of bringing back the music visualizer to modern day society, this project was made. Visualizations are made via:
 - Latent vector interpolation, based on the bpm of the song and the power (volume) of the moment in the song.
+    - Interpolation occurs in a spiraling circle movement for non repetetive scenes, along with cubic easing for satisfying visuals. 
 - Prompt vector interpolation, based on a 12 note (prompts) chromatic scale.
   	- Prompt interpolations are done via detecting which notes bring on the onset of the next moments of the song (chorus, bridge, etc.) Then the interpolation strength is based on the power levels of the chromatic notes
   	- Based on the onset detected notes, prompt interpolation can either be done via
