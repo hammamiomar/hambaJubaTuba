@@ -1,10 +1,11 @@
-import torch, torchvision
+import torch
 from scipy.ndimage import gaussian_filter1d
 from scipy.ndimage import gaussian_filter
 import os
 
-from diffusers import StableDiffusionPipeline, AutoencoderKL, StableDiffusionControlNetPipeline, ControlNetModel
-from controlnet_aux import LineartDetector
+from diffusers import StableDiffusionPipeline, StableDiffusionXLPipeline, StableDiffusionControlNetPipeline, ControlNetModel, DDIMScheduler, TCDScheduler
+from controlnet_aux import OpenposeDetector, MidasDetector
+from huggingface_hub import hf_hub_download
 import librosa
 import tqdm as tqdm
 from PIL import Image
@@ -12,42 +13,79 @@ import numpy as np
 import moviepy.editor as mpy
 import math
 
+
+
 class NoiseVisualizer:
     def __init__(self, device="mps", weightType=torch.float16, seed=42069):
         torch.manual_seed(seed)
         self.device = device
         self.weightType = weightType
-    
+        
     def loadPipeSd(self):
-
-        self.pipe = StableDiffusionPipeline.from_pretrained("IDKiro/sdxs-512-dreamshaper", torch_dtype=self.weightType)
-        vae_large = AutoencoderKL.from_pretrained("IDKiro/sdxs-512-dreamshaper", subfolder="vae_large")
-        self.pipe.vae = vae_large
-        
-        self.textEncoder = self.pipe.text_encoder
-        self.tokenizer = self.pipe.tokenizer
+        base_model_id = "runwayml/stable-diffusion-v1-5"
+        repo_name = "ByteDance/Hyper-SD"
+        ckpt_name = "Hyper-SD15-1step-lora.safetensors"
+        # Load model.
+        self.pipe = StableDiffusionPipeline.from_pretrained(base_model_id, torch_dtype=self.weightType).to(self.device)
+        self.pipe.load_lora_weights(hf_hub_download(repo_name, ckpt_name))
+        self.pipe.fuse_lora()
+        self.pipe.scheduler = TCDScheduler.from_config(self.pipe.scheduler.config)                    
         self.pipe.safety_checker = None
         self.pipe.set_progress_bar_config(disable=True)
-        self.pipe.to(self.device)
+        self.pipe.to(self.device, dtype=self.weightType)
         
-    def loadPipeSdCtrl(self):
-        controlnet = ControlNetModel.from_pretrained(
-            "IDKiro/sdxs-512-dreamshaper-sketch", torch_dtype=self.weightType
-        ).to(self.device)
-        self.preprocessor = LineartDetector.from_pretrained("lllyasviel/Annotators")
-        self.preprocessor.to(self.device)
+        self.promptPool = False  
         
-        self.pipe = StableDiffusionControlNetPipeline.from_pretrained("IDKiro/sdxs-512-dreamshaper", torch_dtype=self.weightType, controlnet=controlnet)
-        vae_large = AutoencoderKL.from_pretrained("IDKiro/sdxs-512-dreamshaper", subfolder="vae_large")
-        self.pipe.vae = vae_large
+    def loadPipeSdXL(self):
+        base_model_id = "stabilityai/stable-diffusion-xl-base-1.0"
+        repo_name = "ByteDance/Hyper-SD"
+        # Take 2-steps lora as an example
+        ckpt_name = "Hyper-SDXL-8steps-CFG-lora.safetensors"
+        # Load model.
+        self.pipe = StableDiffusionXLPipeline.from_pretrained(base_model_id, torch_dtype=self.weightType).to(self.device)
+        self.pipe.load_lora_weights(hf_hub_download(repo_name, ckpt_name))
+        self.pipe.fuse_lora()
+        # Ensure ddim scheduler timestep spacing set as trailing !!!
+        self.pipe.scheduler = DDIMScheduler.from_config(self.pipe.scheduler.config, timestep_spacing="trailing")
         
-        self.textEncoder = self.pipe.text_encoder
-        self.tokenizer = self.pipe.tokenizer
         self.pipe.safety_checker = None
         self.pipe.set_progress_bar_config(disable=True)
-        self.pipe.to(self.device)
+        self.pipe.to(self.device, dtype=self.weightType)
+        
+        self.promptPool = True 
+         
+    def loadPipeSdCtrl(self, type="depth"):
+        
+        if type=="depth":
+            controlnet = ControlNetModel.from_pretrained(
+                "lllyasviel/control_v11f1p_sd15_depth", 
+                torch_dtype=self.weightType,
+            ).to(self.device)
+            self.preprocessor = MidasDetector.from_pretrained("lllyasviel/Annotators")
+            self.preprocessor.to(self.device)
+        else:
+            
+            controlnet = ControlNetModel.from_pretrained(
+                "lllyasviel/control_v11p_sd15_openpose", 
+                torch_dtype=self.weightType,
+                # local_files_only=True,
+            ).to(self.device)
+            self.preprocessor = OpenposeDetector.from_pretrained("lllyasviel/Annotators")
+            self.preprocessor.to(self.device)
+        
+        self.pipe = StableDiffusionControlNetPipeline.from_pretrained("runwayml/stable-diffusion-v1-5", controlnet=controlnet, torch_dtype=self.weightType).to(self.device)
+        self.pipe.load_lora_weights(hf_hub_download("ByteDance/Hyper-SD","Hyper-SD15-1step-lora.safetensors"))
+        self.pipe.fuse_lora()
+        self.pipe.scheduler = TCDScheduler.from_config(self.pipe.scheduler.config)                    
 
-    def loadSong(self,file,hop_length, number_of_chromas=12, bpm=None):
+        self.pipe.safety_checker = None
+        self.pipe.set_progress_bar_config(disable=True)
+        
+        self.promptPool = False
+        
+        
+    
+    def loadSong(self,file,hop_length):
         y, sr = librosa.load(file, sr=22050) # 3 min 52 sec
         self.hop_length=hop_length
         self.sr = sr
@@ -56,18 +94,13 @@ class NoiseVisualizer:
         y_harmonic, y_percussive = librosa.effects.hpss(y)
         oenv = librosa.onset.onset_strength(y=y, sr=sr, hop_length=self.hop_length)
 
-        # Latent generaton
-        if bpm:
-            self.tempo, self.beat_frames = librosa.beat.beat_track(y=y_percussive, sr=sr, hop_length=self.hop_length,bpm=bpm)
-        else:
-            self.tempo, self.beat_frames = librosa.beat.beat_track(y=y_percussive, sr=sr, hop_length=self.hop_length)
+        self.tempo, self.beat_frames = librosa.beat.beat_track(y=y_percussive, sr=sr, hop_length=self.hop_length)
         
         melSpec = librosa.feature.melspectrogram(y=y,sr=sr, n_mels = 256, hop_length=self.hop_length)
         self.melSpec = np.sum(melSpec,axis=0)
         
-        
         # Prompt Generation
-        self.chroma_cq = librosa.feature.chroma_cqt(y=y, sr=sr, hop_length=self.hop_length, n_chroma=number_of_chromas)
+        self.chroma_cq = librosa.feature.chroma_cqt(y=y, sr=sr, hop_length=self.hop_length, n_chroma=12)
         
         # Onset Detection
         onset_raw = librosa.onset.onset_detect(
@@ -77,13 +110,10 @@ class NoiseVisualizer:
 
         # Chroma Delta Computation
         self.chroma_cq_delta = librosa.feature.delta(self.chroma_cq, order=1)
-      
-
         
         # Get indices of the top N chromas with the largest deltas at each frame
 
         self.steps = self.melSpec.shape[0]
-        self.number_of_chromas = number_of_chromas  # Store for use in getPromptEmbeds
     
     def loadVideo(self, file):
         clip = mpy.VideoFileClip(file)
@@ -130,48 +160,13 @@ class NoiseVisualizer:
             last_beat_idx = current_idx
 
         return torch.tensor(output_array, dtype=self.weightType)
-    def getBeatLatentsCircle(self, distance, noteType, jitter_strength, height=512, width=512): 
-        # shape: (batch, latent channels, height, width)
-        
-        latent_channels = self.pipe.unet.in_channels
-        shape = (1, latent_channels, height/8, width/8)
-        
-        # Initialize random noise for X and Y coordinates of the walk
-        walkNoiseX = torch.randn(shape, dtype=self.weightType, device=self.device)
-        walkNoiseY = torch.randn(shape, dtype=self.weightType, device=self.device)
-        
-        # Apply the easing values to the scales (mapping easing values to noise)
-        easing_values = self.getEasedBeats(noteType=noteType).to(self.device)
-        
-        # Compute cumulative sum of easing values to get the angle
-        # Adjust the scaling factor to control speed of rotation
-        scaling_factor = distance * 2 * math.pi  # Multiply by 2π for full rotations
-        angles = torch.cumsum(easing_values, dim=0) * scaling_factor
-        
-        # # Optionally add some jitter to the angles to add randomness
-        jitter = torch.randn_like(angles) * jitter_strength
-        angles += jitter
-        
-        # Compute cos and sin of the angles
-        walkScaleX = torch.cos(angles)
-        walkScaleY = torch.sin(angles)
-        
-        # Expand walkScaleX and walkScaleY to match dimensions for multiplication
-        walkScaleX = walkScaleX.view(-1, 1, 1, 1)
-        walkScaleY = walkScaleY.view(-1, 1, 1, 1)
-        
-        # Generate the noise tensors based on the interpolated scales
-        noiseX = walkScaleX * walkNoiseX
-        noiseY = walkScaleY * walkNoiseY
-        
-        # Add the noise contributions for X and Y to create the latent walk
-        latents = noiseX + noiseY  # Shape: (steps, 4, 64, 64)
-        return latents
 
-    def getBeatLatentsCircleGPT(self, distance, noteType, jitter_strength, height=512, width=512):
+    def getBeatLatentsCircle(self, distance, noteType, height=512, width=512):
         # Initialize noise tensors
+
         latent_channels = self.pipe.unet.in_channels
-        shape = (1, latent_channels, height//8, width//8)
+            
+        shape = (1, latent_channels, height//8, width//8) 
         walkNoiseX = torch.randn(shape, dtype=self.weightType, device=self.device)
         walkNoiseY = torch.randn(shape, dtype=self.weightType, device=self.device)
 
@@ -245,10 +240,6 @@ class NoiseVisualizer:
                 # Update angles for this interval
                 angles[start_frame:end_frame] = angle_change
 
-        # Add jitter to the angles for randomness
-        jitter = torch.randn_like(angles) * jitter_strength
-        #angles += jitter
-
         # Compute cosine and sine of the angles
         walkScaleX = torch.cos(angles)
         walkScaleY = torch.sin(angles)
@@ -290,14 +281,14 @@ class NoiseVisualizer:
         )
         return interp_embed
     
-    def getPromptEmbedsOnsetFocus(self, basePrompt, targetPromptChromaScale, method="slerp", alpha=0.5, sigma=2):
+    def getPromptEmbedsOnsetFocus(self, basePrompt, targetPromptChromaScale, alpha=0.5, sigma=2):
         chroma = self.chroma_cq.T  # shape: (numFrames, 12)
         numFrames = chroma.shape[0]
 
         top_chromaOnset = np.argmax(np.abs(self.chroma_cq_delta), axis=0)
         # Onset frames and dominant chromas
         onset_frames = self.onset_bt
-        dominant_chromas = top_chromaOnset[self.onset_bt]
+        dominant_chromas = top_chromaOnset[onset_frames]
 
         # Initialize alphas and dominant chroma per frame
         alphas = np.zeros(numFrames)
@@ -347,70 +338,66 @@ class NoiseVisualizer:
         dominant_chroma_per_frame[start_frame:end_frame] = dominant_chroma
 
         # Apply temporal smoothing to alphas (optional)
-        #alphas = gaussian_filter1d(alphas, sigma=sigma)
+        alphas = gaussian_filter1d(alphas, sigma=sigma)
 
-        # Get baseEmbeds and targetEmbeds
-        baseInput = self.tokenizer(
-            basePrompt,
-            return_tensors="pt",
-            padding="max_length",
-            truncation=True,
-            max_length=77,
-        ).input_ids.to(self.device)
-        baseEmbeds = self.textEncoder(baseInput)[0].squeeze(0)  # shape: (seq_len, hidden_size)
+        if self.promptPool:
+            baseEmbeds,baseNegativeEmbeds,baseEmbedsPooled,baseNegativeEmbedsPooled = self.pipe.encode_prompt(prompt=basePrompt,prompt_2=basePrompt,
+                                                                                                              device=self.device,num_images_per_prompt=1,do_classifier_free_guidance=False)
+            
+            targetEmbeds,targetNegativeEmbeds,targetEmbedsPooled,targetNegativeEmbedsPooled = self.pipe.encode_prompt(prompt=targetPromptChromaScale,prompt_2=targetPromptChromaScale,
+                                                                                                                      device=self.device,num_images_per_prompt=1,do_classifier_free_guidance=False)
+            
+            baseEmbeds = baseEmbeds.squeeze(0)
+            baseEmbedsPooled = baseEmbedsPooled.squeeze(0)
+            # Initialize interpolatedEmbedsAll
+            interpolatedEmbedsAll = []
+            interpolatedEmbedsAllPooled = []
 
-        targetInputs = self.tokenizer(
-            targetPromptChromaScale,
-            return_tensors="pt",
-            padding="max_length",
-            truncation=True,
-            max_length=77,
-        ).input_ids.to(self.device)
-        targetEmbeds = self.textEncoder(targetInputs)[0]  # shape: (12, seq_len, hidden_size)
+            # For each frame
+            for frame in range(numFrames):
+                
+                alphaFrame = alphas[frame]
+                dominant_chroma = dominant_chroma_per_frame[frame]
+                
+                target_embed = targetEmbeds[dominant_chroma]  # shape: (seq_len, hidden_size)
+                target_embedPooled = targetEmbedsPooled[dominant_chroma]
+                
+                interpolatedEmbed = self.slerp(baseEmbeds, target_embed, alphaFrame)
+                interpolatedEmbedPooled = self.slerp(baseEmbedsPooled, target_embedPooled, alphaFrame)
+                
+                interpolatedEmbedsAll.append(interpolatedEmbed)  # shape: (1, seq_len, hidden_size)
+                interpolatedEmbedsAllPooled.append(interpolatedEmbedPooled)
 
-        # Initialize interpolatedEmbedsAll
-        interpolatedEmbedsAll = []
+            interpolatedEmbeds = torch.stack(interpolatedEmbedsAll)  # shape: (numFrames, 1, seq_len, hidden_size)
+            interpolatedEmbedsPooled = torch.stack(interpolatedEmbedsAllPooled)
+            
+            return interpolatedEmbeds, interpolatedEmbedsPooled
+        else:
+            baseEmbeds,baseNegativeEmbeds = self.pipe.encode_prompt(prompt=basePrompt,device=self.device,num_images_per_prompt=1,do_classifier_free_guidance=False)
+            
+            targetEmbeds,targetNegativeEmbeds = self.pipe.encode_prompt(prompt=targetPromptChromaScale, device=self.device,num_images_per_prompt=1,do_classifier_free_guidance=False)
 
-        # For each frame
-        for frame in range(numFrames):
-            alpha = alphas[frame]
-            dominant_chroma = dominant_chroma_per_frame[frame]
+            baseEmbeds = baseEmbeds.squeeze(0)
+            # Initialize interpolatedEmbedsAll
+            interpolatedEmbedsAll = []
 
-            # Use weighted sum of chroma embeddings if desired (optional)
-            # For now, we focus on the dominant chroma
-            target_embed = targetEmbeds[dominant_chroma]  # shape: (seq_len, hidden_size)
+            # For each frame
+            for frame in range(numFrames):
+                
+                alphaFrame = alphas[frame]
+                dominant_chroma = dominant_chroma_per_frame[frame]
+                target_embed = targetEmbeds[dominant_chroma]  # shape: (seq_len, hidden_size)
+                interpolatedEmbed = self.slerp(baseEmbeds, target_embed, alphaFrame)
+                interpolatedEmbedsAll.append(interpolatedEmbed)  # shape: (1, seq_len, hidden_size)
 
-            if method == "linear":
-                interpolatedEmbed = (1 - alpha) * baseEmbeds + alpha * target_embed
-            elif method == "slerp":
-                interpolatedEmbed = self.slerp(baseEmbeds, target_embed, alpha)
-            else:
-                raise ValueError(f"Unknown interpolation method: {method}")
+            interpolatedEmbeds = torch.stack(interpolatedEmbedsAll)  # shape: (numFrames, 1, seq_len, hidden_size)
 
-            interpolatedEmbedsAll.append(interpolatedEmbed)  # shape: (1, seq_len, hidden_size)
-
-        interpolatedEmbeds = torch.stack(interpolatedEmbedsAll)  # shape: (numFrames, 1, seq_len, hidden_size)
-
-        return interpolatedEmbeds
+            return interpolatedEmbeds
         
         
     def getPromptEmbedsCum(self, basePrompt, targetPromptChromaScale, alpha=0.5, sigma_time=2, sigma_chroma=1, number_of_chromas_focus=6,
                            num_prompt_shuffles=4):
-        """
-        Generates interpolated embeddings with multivariate smoothing applied to alpha values.
 
-        Parameters:
-        - basePrompt (str): The base prompt text.
-        - targetPromptChromaScale (str): The target prompt with chroma scaling.
-        - alpha (float): The scaling factor for alpha values.
-        - sigma_time (float): Standard deviation for Gaussian kernel in the time dimension.
-        - sigma_chroma (float): Standard deviation for Gaussian kernel in the chroma dimension.
-
-        Returns:
-        - interpolatedEmbeds (torch.Tensor): The interpolated embeddings tensor.
-        """
-        # First, get top chromas in terms of absolute value, sliced. 
-        # Transpose chroma to shape: (numFrames, 12)
         chroma = self.chroma_cq.T  # shape: (numFrames, 12)
         numFrames = chroma.shape[0]
         number_of_chromas = number_of_chromas_focus # Retrieve the number of chromas to consider
@@ -465,87 +452,115 @@ class NoiseVisualizer:
         # Axis 0: Time (frames), Axis 1: Chroma
         alphas_smoothed = gaussian_filter(alphas, sigma=(sigma_time, sigma_chroma), mode='reflect') # alphas are the chroma magnitudes between onset frames, normalized per onset to onset
 
-        # # **Re-normalize Alphas Per Frame to Ensure the Sum Equals alpha**
-        # magnitudes_sum = alphas_smoothed.sum(axis=1, keepdims=True) + 1e-8  # Avoid division by zero  TODO: IS THIS NEEDED? ?? NO!!!???
-        # alphas_normalized = (alphas_smoothed / magnitudes_sum) * alpha  # shape: (numFrames, number_of_chromas)
+        # **Re-normalize Alphas Per Frame to Ensure the Sum Equals alpha**
+        magnitudes_sum = alphas_smoothed.sum(axis=1, keepdims=True) + 1e-8  # Avoid division by zero  TODO: IS THIS NEEDED? ?? NO!!!???
+        alphas_normalized = (alphas_smoothed / magnitudes_sum) * alpha  # shape: (numFrames, number_of_chromas)
 
-        # # **Update the Alphas Array with the Smoothed and Normalized Alphas**
-        # alphas = alphas_normalized
+        # **Update the Alphas Array with the Smoothed and Normalized Alphas**
+        alphas = alphas_normalized
 
-        # **Proceed with Embedding Interpolation as Before**
-
-        # Get baseEmbeds and targetEmbeds
-        baseInput = self.tokenizer(
-            basePrompt,
-            return_tensors="pt",
-            padding="max_length",
-            truncation=True,
-            max_length=77,
-        ).input_ids.to(self.device)
-        baseEmbeds = self.textEncoder(baseInput)[0].squeeze(0)  # shape: (seq_len, hidden_size)
-        baseEmbeds.to(self.device)
-        
-        targetInputs = self.tokenizer(
-            targetPromptChromaScale,
-            return_tensors="pt",
-            padding="max_length",
-            truncation=True,
-            max_length=77,
-        ).input_ids.to(self.device)
-        targetEmbeds = self.textEncoder(targetInputs)[0]  # shape: (12, seq_len, hidden_size)
-        targetEmbeds.to(self.device)
-
-        # Initialize interpolatedEmbedsAll
-        interpolatedEmbedsAll = []
-
-        
-        shuffle_points = [int(i * numFrames / num_prompt_shuffles) for i in range(1, num_prompt_shuffles)]  # Calculate exact shuffle points
-                # For each frame
-
-        for frame in range(numFrames):
-
-            if frame in shuffle_points:
-                targetEmbeds = targetEmbeds[torch.randperm(targetEmbeds.size(0))]# Shuffle along dimension 0
-                targetEmbeds.to(self.device)
-                        
-            alpha_values = alphas[frame, :]  # shape: (number_of_chromas,)
-            total_alpha = alpha_values.sum() # TODO IS THIS NEEEDED??? 
-            if total_alpha > alpha:
-                alpha_values = (alpha_values / total_alpha) * alpha
-                total_alpha = alpha
-
-            base_alpha = 1.0 - total_alpha
-            chroma_indices = chromas_per_frame[frame, :]  # shape: (number_of_chromas,)  what chromas to show in this frame
-
-            # Start with baseEmbeds multiplied by base_alpha
-            interpolatedEmbed = base_alpha * baseEmbeds
-
-            # Add contributions from each target chroma
+        if self.promptPool:
+            baseEmbeds,baseNegativeEmbeds,baseEmbedsPooled,baseNegativeEmbedsPooled = self.pipe.encode_prompt(prompt=basePrompt,prompt_2=basePrompt,
+                                                                                                              device=self.device,num_images_per_prompt=1,do_classifier_free_guidance=False)
             
-            for n in range(number_of_chromas):
-                target_embed = targetEmbeds[chroma_indices[n]]  # shape: (seq_len, hidden_size)
-                interpolatedEmbed += alpha_values[n] * target_embed 
+            targetEmbeds,targetNegativeEmbeds,targetEmbedsPooled,targetNegativeEmbedsPooled = self.pipe.encode_prompt(prompt=targetPromptChromaScale,prompt_2=targetPromptChromaScale,
+                                                                                                                      device=self.device,num_images_per_prompt=1,do_classifier_free_guidance=False)
             
-            interpolatedEmbed = self.slerp(baseEmbeds,interpolatedEmbed,total_alpha)
-            interpolatedEmbedsAll.append(interpolatedEmbed)  # shape: (1, seq_len, hidden_size)
+            baseEmbeds = baseEmbeds.squeeze(0)
+            baseEmbedsPooled = baseEmbedsPooled.squeeze(0)
+            # Initialize interpolatedEmbedsAll
+            interpolatedEmbedsAll = []
+            interpolatedEmbedsAllPooled = []
+            
+            shuffle_points = [int(i * numFrames / num_prompt_shuffles) for i in range(1, num_prompt_shuffles)]  # Calculate exact shuffle points
+                    # For each frame
 
-        interpolatedEmbeds = torch.stack(interpolatedEmbedsAll)  # shape: (numFrames, seq_len, hidden_size)
+            for frame in range(numFrames):
 
-        return interpolatedEmbeds
-    
+                if frame in shuffle_points:
+                    targetEmbeds = targetEmbeds[torch.randperm(targetEmbeds.size(0))]# Shuffle along dimension 0
+                    targetEmbeds.to(self.device)
+                    
+                    targetEmbedsPooled = targetEmbedsPooled[torch.randperm(targetEmbedsPooled.size(0))]# Shuffle along dimension 0
+                    targetEmbedsPooled.to(self.device)
+                            
+                            
+                alpha_values = alphas[frame, :]  # shape: (number_of_chromas,)
+                total_alpha = alpha_values.sum() # TODO IS THIS NEEEDED??? 
+                if total_alpha > alpha:
+                    alpha_values = (alpha_values / total_alpha) * alpha
+                    total_alpha = alpha
+
+                base_alpha = 1.0 - total_alpha
+                chroma_indices = chromas_per_frame[frame, :]  # shape: (number_of_chromas,)  what chromas to show in this frame
+
+                # Start with baseEmbeds multiplied by base_alpha
+                interpolatedEmbed = base_alpha * baseEmbeds
+                interpolatedEmbedPooled = base_alpha * baseEmbedsPooled
+
+                # Add contributions from each target chroma
+                
+                for n in range(number_of_chromas):
+                    target_embed = targetEmbeds[chroma_indices[n]]  # shape: (seq_len, hidden_size)
+                    interpolatedEmbed += alpha_values[n] * target_embed 
+                    
+                    target_embedPooled = targetEmbedsPooled[chroma_indices[n]]  # shape: (seq_len, hidden_size)
+                    interpolatedEmbedPooled += alpha_values[n] * target_embedPooled
+                
+                interpolatedEmbedsAll.append(interpolatedEmbed)  # shape: (1, seq_len, hidden_size)
+                interpolatedEmbedsAllPooled.append(interpolatedEmbedPooled)  # shape: (1, seq_len, hidden_size)
+
+            interpolatedEmbeds = torch.stack(interpolatedEmbedsAll)  # shape: (numFrames, seq_len, hidden_size)
+            interpolatedEmbedsPooled = torch.stack(interpolatedEmbedsAllPooled)
+
+            return interpolatedEmbeds, interpolatedEmbedsPooled
+
+        
+        else:
+            baseEmbeds,baseNegativeEmbeds = self.pipe.encode_prompt(prompt=basePrompt,device=self.device,num_images_per_prompt=1,do_classifier_free_guidance=False)
+            
+            targetEmbeds,targetNegativeEmbeds = self.pipe.encode_prompt(prompt=targetPromptChromaScale, device=self.device,num_images_per_prompt=1,do_classifier_free_guidance=False)
+
+            baseEmbeds = baseEmbeds.squeeze(0)
+            # Initialize interpolatedEmbedsAll
+            interpolatedEmbedsAll = []
+
+            
+            shuffle_points = [int(i * numFrames / num_prompt_shuffles) for i in range(1, num_prompt_shuffles)]  # Calculate exact shuffle points
+                    # For each frame
+
+            for frame in range(numFrames):
+
+                if frame in shuffle_points:
+                    targetEmbeds = targetEmbeds[torch.randperm(targetEmbeds.size(0))]# Shuffle along dimension 0
+                    targetEmbeds.to(self.device)
+                            
+                alpha_values = alphas[frame, :]  # shape: (number_of_chromas,)
+                total_alpha = alpha_values.sum()
+                if total_alpha > alpha:
+                    alpha_values = (alpha_values / total_alpha) * alpha
+                    total_alpha = alpha
+
+                base_alpha = 1.0 - total_alpha
+                chroma_indices = chromas_per_frame[frame, :]  # shape: (number_of_chromas,)  what chromas to show in this frame
+
+                # Start with baseEmbeds multiplied by base_alpha
+                interpolatedEmbed = base_alpha * baseEmbeds
+
+                # Add contributions from each target chroma
+                
+                for n in range(number_of_chromas):
+                    target_embed = targetEmbeds[chroma_indices[n]]  # shape: (seq_len, hidden_size)
+                    interpolatedEmbed += alpha_values[n] * target_embed 
+                
+                interpolatedEmbedsAll.append(interpolatedEmbed)  # shape: (1, seq_len, hidden_size)
+
+            interpolatedEmbeds = torch.stack(interpolatedEmbedsAll)  # shape: (numFrames, seq_len, hidden_size)
+
+            return interpolatedEmbeds
+
     def getVisuals(self, latents, promptEmbeds, num_inference_steps=1, batch_size=2, guidance_scale=0):
-        
-        
-        negativePrompt = self.tokenizer(
-            "blurry, low resolution, bad anatomy, deformed, disfigured, extra limbs, extra fingers, missing limbs, bad proportions, bad composition, out of frame, watermark, text, grainy, poorly drawn face",
-            return_tensors="pt",
-            padding="max_length",
-            truncation=True,
-            max_length=77,
-        ).input_ids.to(self.device)
-        negativeEmbeds = self.textEncoder(negativePrompt)[0]
-        negativeEmbeds.to(self.device)
-        
+      
         #self.pipe.vae = self.vae
         self.pipe.to(device=self.device, dtype=self.weightType)
         
@@ -558,7 +573,30 @@ class NoiseVisualizer:
         
         for i in tqdm.tqdm(range(0, num_frames, batch_size)):
             frames = self.pipe(prompt_embeds=promptEmbeds[i:i + batch_size],
-                               #negative_prompt_embeds=negativeEmbeds,
+                               guidance_scale=guidance_scale,
+                               eta=1.0,
+                               num_inference_steps=num_inference_steps,
+                               latents=latents[i:i+batch_size],
+                               output_type="pil").images
+            allFrames.extend(frames)
+        return allFrames
+    
+    def getVisualsPooled(self, latents, promptEmbeds, promptEmbedsPooled, num_inference_steps=4, batch_size=1, guidance_scale=3):
+        
+        #self.pipe.vae = self.vae
+        self.pipe.to(device=self.device, dtype=self.weightType)
+        
+        latents.to(self.device)
+        promptEmbeds.to(self.device)
+        promptEmbedsPooled.to(self.device)
+        
+        allFrames=[]
+        
+        num_frames = self.steps
+        
+        for i in tqdm.tqdm(range(0, num_frames, batch_size)):
+            frames = self.pipe(prompt_embeds=promptEmbeds[i:i + batch_size],
+                               pooled_prompt_embeds = promptEmbedsPooled[i:i + batch_size],
                                guidance_scale=guidance_scale,
                                num_inference_steps=num_inference_steps,
                                latents=latents[i:i+batch_size],
@@ -566,18 +604,7 @@ class NoiseVisualizer:
             allFrames.extend(frames)
         return allFrames
         
-    def getVisualsCtrl(self, latents, promptEmbeds, ctrlFrames, num_inference_steps=1, batch_size=2, guidance_scale=0):
-        
-        
-        negativePrompt = self.tokenizer(
-            "blurry, low resolution, bad anatomy, deformed, disfigured, extra limbs, extra fingers, missing limbs, bad proportions, bad composition, out of frame, watermark, text, grainy, poorly drawn face",
-            return_tensors="pt",
-            padding="max_length",
-            truncation=True,
-            max_length=77,
-        ).input_ids.to(self.device)
-        negativeEmbeds = self.textEncoder(negativePrompt)[0]
-        negativeEmbeds.to(self.device)
+    def getVisualsCtrl(self, latents, promptEmbeds, ctrlFrames, num_inference_steps=1, batch_size=2, guidance_scale=0,width=512,height=512):
         
         #self.pipe.vae = self.vae
         self.pipe.to(device=self.device, dtype=self.weightType)
@@ -593,7 +620,8 @@ class NoiseVisualizer:
         
         for i in tqdm.tqdm(range(0, num_frames, batch_size)):
             frames = self.pipe(prompt_embeds=promptEmbeds[i:i + batch_size],
-                               #negative_prompt_embeds=negativeEmbeds,
+                               width=width,height=height,
+                               eta=1.0,
                                guidance_scale=guidance_scale,
                                num_inference_steps=num_inference_steps,
                                latents=latents[i:i+batch_size],
@@ -601,3 +629,21 @@ class NoiseVisualizer:
                                output_type="pil").images
             allFrames.extend(frames)
         return allFrames
+    
+def create_mp4_from_pil_images(image_array, output_path, song, fps):
+        """
+        Creates an MP4 video at the specified frame rate from an array of PIL images.
+
+        :param image_array: List of PIL images to be used as frames in the video.
+        :param output_path: Path where the output MP4 file will be saved.
+        :param fps: Frames per second for the output video. Default is 60.
+        """
+        # Convert PIL images to moviepy's ImageClip format
+        clips = [mpy.ImageClip(np.array(img)).set_duration(1/fps) for img in image_array]
+
+        # Concatenate all the clips into a single video clip
+        video = mpy.concatenate_videoclips(clips, method="compose")
+
+        video = video.set_audio(mpy.AudioFileClip(song, fps=44100))
+        # Write the result to a file
+        video.write_videofile(output_path, fps=fps, audio_codec='aac')

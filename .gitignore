@@ -1,6 +1,7 @@
 outputs/
 songs/
 notebooks/
+scripts/
 inputs/
 audio.ipynb
 main.ipynb

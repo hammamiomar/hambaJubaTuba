@@ -1,7 +1,6 @@
 import argparse
-import os
 from src.imagegen import NoiseVisualizer
-from src.utils import create_mp4_from_pil_images
+from src.imagegen import create_mp4_from_pil_images
 import torch
 import time
 
@@ -14,12 +13,12 @@ dtype_map = {
     'int64': torch.int64
 }
 
-def main(song, output_path, device, weightType, seed, hop_length, distance, base_prompt, target_prompts, alpha, 
-         noteType, sigma_time, sigma_chroma, jitter_strength, number_of_chromas, embed_type,number_of_chromas_focus, bpm,
-         num_prompt_shuffles, guidance_scale, num_inference_steps, batch_size):
+def main(song, output_path, device, weightType, seed, distance, base_prompt, target_prompts, alpha, 
+         noteType, sigma_time, sigma_chroma, embed_type,number_of_chromas_focus,
+         num_prompt_shuffles, guidance_scale, num_inference_steps, batch_size, ctrlType):
     
-    visualizer = NoiseVisualizer(device=device, weightType=weightType, seed=seed)
-    visualizer.loadPipeSdCtrl()
+    visualizer = NoiseVisualizer(device=device, weightType=dtype_map[weightType], seed=seed)
+    visualizer.loadPipeSdCtrl(type=ctrlType)
     print(f'loaded {device} as device')
     start_time = time.time()  # Start total timing
     ctrlFrames = visualizer.loadVideo(song)
@@ -28,9 +27,7 @@ def main(song, output_path, device, weightType, seed, hop_length, distance, base
     step_time = time.time()  # Start timing for each step
     print("Getting beat latents")
     width, height = ctrlFrames[0].size
-    latents = visualizer.getBeatLatentsCircleGPT(noteType=noteType, distance=distance, jitter_strength=jitter_strength, height=height,width=width)
-    #latents = visualizer.getBeatLatentsCircle(distance=distance, noteType=noteType, jitter_strength=jitter_strength)
-    #latents = visualizer.getBeatLatentsSpiral(distance=distance, noteType=noteType, spiral_rate=spiral_rate)
+    latents = visualizer.getBeatLatentsCircle(noteType=noteType, distance=distance, height=height,width=width)
     print(f"Got beat latents in {time.time() - step_time:.2f} seconds.")
     
     fps = visualizer.getFPS()
@@ -60,7 +57,8 @@ def main(song, output_path, device, weightType, seed, hop_length, distance, base
                                    ctrlFrames=ctrlFrames,
                                    num_inference_steps=num_inference_steps, 
                                    guidance_scale=guidance_scale,
-                                   batch_size=batch_size)
+                                   batch_size=batch_size,
+                                   width=width,height=height)
     print(f"Generated visuals in {time.time() - step_time:.2f} seconds.")
 
     step_time = time.time()  # Reset step timing
@@ -100,14 +98,13 @@ if __name__ == "__main__":
     parser.add_argument("--sigma_chroma", type=float, default=1, help="Sigma value for prompt interpolation.")
     parser.add_argument("--note_type", type=str, default="quarter",help="whole, half, or quarter" )
     parser.add_argument("--jitter_strength", type=float, default=0.1, help="Jitter strength for latent interpolation")
-    parser.add_argument("--number_of_chromas", type=int, default=12)
     parser.add_argument("--number_of_chromas_focus", type=int, default=6)
     parser.add_argument("--embed_type", type=str, default="focus")
-    parser.add_argument("--bpm", type=int, default=None)
     parser.add_argument("--num_prompt_shuffles", type=int, default=4)
     parser.add_argument("--num_inference_steps", type=int, default=4)
     parser.add_argument("--guidance_scale", type=int, default=7)
     parser.add_argument("--batch_size", type=int, default=8)
+    parser.add_argument("--ctrlType", type=str, default="depth")
 
     
 
@@ -116,7 +113,7 @@ if __name__ == "__main__":
     main(song=args.song, 
          output_path=args.output, 
          device=args.device,
-         weightType=dtype_map[args.weightType],
+         weightType=args.weightType,
          seed=args.seed, 
          hop_length=args.hop_length, 
          distance=args.distance, 
@@ -127,11 +124,10 @@ if __name__ == "__main__":
          sigma_time = args.sigma_time,
          sigma_chroma = args.sigma_chroma,
          jitter_strength = args.jitter_strength,
-         number_of_chromas = args.number_of_chromas,
          number_of_chromas_focus = args.number_of_chromas_focus,
          embed_type = args.embed_type,
-         bpm=args.bpm,
          num_prompt_shuffles = args.num_prompt_shuffles,
          num_inference_steps = args.num_inference_steps,
          guidance_scale = args.guidance_scale,
-         batch_size=args.batch_size)
+         batch_size=args.batch_size,
+         ctrlType=args.ctrlType)

@@ -1,6 +1,7 @@
 import argparse
+import os
 from src.imagegen import NoiseVisualizer
-from src.imagegen import create_mp4_from_pil_images
+from src.utils import create_mp4_from_pil_images
 import torch
 import time
 
@@ -14,19 +15,21 @@ dtype_map = {
 }
 
 def main(song, output_path, device, weightType, seed, hop_length, distance, base_prompt, target_prompts, alpha, 
-         noteType, sigma_time, sigma_chroma, embed_type, number_of_chromas_focus,
+         noteType, sigma_time, sigma_chroma, jitter_strength, number_of_chromas, embed_type,number_of_chromas_focus, bpm,
          num_prompt_shuffles, guidance_scale, num_inference_steps, batch_size):
     
-    visualizer = NoiseVisualizer(device=device, weightType=dtype_map[weightType], seed=seed)
-    visualizer.loadPipeSd()
+    visualizer = NoiseVisualizer(device=device, weightType=weightType, seed=seed)
+    visualizer.loadPipeSdXL()
     print(f'loaded {device} as device')
     start_time = time.time()  # Start total timing
-    visualizer.loadSong(song, hop_length=hop_length)
+    visualizer.loadSong(song, hop_length=hop_length, number_of_chromas=number_of_chromas, bpm=bpm)
     print(f"Loaded song in {time.time() - start_time:.2f} seconds.")
 
     step_time = time.time()  # Start timing for each step
     print("Getting beat latents")
-    latents = visualizer.getBeatLatentsCircle(noteType=noteType, distance=distance)
+    latents = visualizer.getBeatLatentsCircle(noteType=noteType, distance=distance, height=1024, width=1024)
+    #latents = visualizer.getBeatLatentsCircle(distance=distance, noteType=noteType, jitter_strength=jitter_strength)
+    #latents = visualizer.getBeatLatentsSpiral(distance=distance, noteType=noteType, spiral_rate=spiral_rate)
     print(f"Got beat latents in {time.time() - step_time:.2f} seconds.")
     
     fps = visualizer.getFPS()
@@ -34,7 +37,7 @@ def main(song, output_path, device, weightType, seed, hop_length, distance, base
     step_time = time.time()  # Reset step timing
     print("Getting prompt embeds")
     if embed_type == "focus":
-        prompt_embeds = visualizer.getPromptEmbedsOnsetFocus(basePrompt=base_prompt, 
+        prompt_embeds,prompt_embeds_pooled = visualizer.getPromptEmbedsOnsetFocus(basePrompt=base_prompt, 
                                                targetPromptChromaScale=target_prompts, 
                                                alpha=alpha,
                                                sigma=sigma_time)
@@ -51,8 +54,9 @@ def main(song, output_path, device, weightType, seed, hop_length, distance, base
     print(f"Got prompt embeds in {time.time() - step_time:.2f} seconds.")
 
     step_time = time.time()  # Reset step timing
-    images = visualizer.getVisuals(latents=latents, 
+    images = visualizer.getVisualsPooled(latents=latents, 
                                    promptEmbeds=prompt_embeds,
+                                   promptEmbedsPooled=prompt_embeds_pooled,
                                    num_inference_steps=num_inference_steps, 
                                    guidance_scale=guidance_scale,
                                    batch_size=batch_size)
@@ -94,8 +98,11 @@ if __name__ == "__main__":
     parser.add_argument("--sigma_time", type=float, default=2, help="Sigma value for prompt interpolation.")
     parser.add_argument("--sigma_chroma", type=float, default=1, help="Sigma value for prompt interpolation.")
     parser.add_argument("--note_type", type=str, default="quarter",help="whole, half, or quarter" )
+    parser.add_argument("--jitter_strength", type=float, default=0.1, help="Jitter strength for latent interpolation")
+    parser.add_argument("--number_of_chromas", type=int, default=12)
     parser.add_argument("--number_of_chromas_focus", type=int, default=6)
     parser.add_argument("--embed_type", type=str, default="focus")
+    parser.add_argument("--bpm", type=int, default=None)
     parser.add_argument("--num_prompt_shuffles", type=int, default=4)
     parser.add_argument("--num_inference_steps", type=int, default=4)
     parser.add_argument("--guidance_scale", type=int, default=7)
@@ -108,7 +115,7 @@ if __name__ == "__main__":
     main(song=args.song, 
          output_path=args.output, 
          device=args.device,
-         weightType=args.weightType,
+         weightType=dtype_map[args.weightType],
          seed=args.seed, 
          hop_length=args.hop_length, 
          distance=args.distance, 
@@ -118,9 +125,11 @@ if __name__ == "__main__":
          noteType = args.note_type,
          sigma_time = args.sigma_time,
          sigma_chroma = args.sigma_chroma,
+         jitter_strength = args.jitter_strength,
          number_of_chromas = args.number_of_chromas,
          number_of_chromas_focus = args.number_of_chromas_focus,
          embed_type = args.embed_type,
+         bpm=args.bpm,
          num_prompt_shuffles = args.num_prompt_shuffles,
          num_inference_steps = args.num_inference_steps,
          guidance_scale = args.guidance_scale,
