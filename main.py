@@ -118,7 +118,6 @@ if __name__ == "__main__":
          noteType = args.note_type,
          sigma_time = args.sigma_time,
          sigma_chroma = args.sigma_chroma,
-         number_of_chromas = args.number_of_chromas,
          number_of_chromas_focus = args.number_of_chromas_focus,
          embed_type = args.embed_type,
          num_prompt_shuffles = args.num_prompt_shuffles,

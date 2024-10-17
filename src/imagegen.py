@@ -479,10 +479,7 @@ class NoiseVisualizer:
 
                 if frame in shuffle_points:
                     targetEmbeds = targetEmbeds[torch.randperm(targetEmbeds.size(0))]# Shuffle along dimension 0
-                    targetEmbeds.to(self.device)
-                    
                     targetEmbedsPooled = targetEmbedsPooled[torch.randperm(targetEmbedsPooled.size(0))]# Shuffle along dimension 0
-                    targetEmbedsPooled.to(self.device)
                             
                             
                 alpha_values = alphas[frame, :]  # shape: (number_of_chromas,)
@@ -533,7 +530,7 @@ class NoiseVisualizer:
 
                 if frame in shuffle_points:
                     targetEmbeds = targetEmbeds[torch.randperm(targetEmbeds.size(0))]# Shuffle along dimension 0
-                    targetEmbeds.to(self.device)
+                    print("shuffled at frame ",frame)
                             
                 alpha_values = alphas[frame, :]  # shape: (number_of_chromas,)
                 total_alpha = alpha_values.sum()
