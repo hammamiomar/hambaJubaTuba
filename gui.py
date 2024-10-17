@@ -9,20 +9,13 @@ from mainCtrl import main as mainCtrl
 with gr.Blocks(fill_width=True, fill_height=True,theme=gr.themes.Monochrome()) as demo:
     gr.Markdown(
         """
-        # Diffusion Music Visualizer
+        # hambaJubaTuba
         """
     )
     # Input type define, so can get different parameters depending on type of input later on
-    with gr.Row(equal_height=True):
+    with gr.Row():
         inputType = gr.Radio(["Audio","Video"],value="Audio",label="Making visualiation purely off audio, or with controlnet",scale=0)
-        
-        # @gr.render(inputs=inputType)
-        # def uploadfile(inputType):
-        #     if inputType == "Audio":
-        #         filePath = gr.File(label="Upload Audio", type="filepath",file_types=["audio"])
-        #     else:
-        #         filepath = gr.File(label = "Upload Video",type="filepath",file_types=["video"])
-        fileAudio = gr.File(label="Upload Audio", type="filepath", file_types=["audio"], visible=True)
+        fileAudio = gr.File(label="Upload Audio", type="filepath", file_types=["audio"], visible=True,scale=1)
         fileVideo = gr.File(label="Upload Video", type="filepath", file_types=["video"], visible=False)
 
         # Update visibility of file inputs based on inputType
@@ -33,24 +26,24 @@ with gr.Blocks(fill_width=True, fill_height=True,theme=gr.themes.Monochrome()) a
                 return gr.update(visible=False), gr.update(visible=True)
 
         inputType.change(fn=update_file_input, inputs=inputType, outputs=[fileAudio, fileVideo])
-                
+        basePrompt = gr.TextArea(label="Base Prompt for interpolation")  
     # Defining the prompt scale
-    basePrompt = gr.TextArea(label="Base Prompt for interpolation")
+    
     gr.Markdown("## 12 Note Chromatic Prompt Scale, from low to high. 77 token limit.")
     with gr.Row():
-        prompt1 = gr.TextArea(label="C")
-        prompt2 = gr.TextArea(label="C-sharp")
-        prompt3 = gr.TextArea(label="D")
-        prompt4 = gr.TextArea(label="D-sharp")
-        prompt5 = gr.TextArea(label="E")
-        prompt6 = gr.TextArea(label="F")
+        prompt1 = gr.Textbox(label="C")
+        prompt2 = gr.Textbox(label="C-sharp")
+        prompt3 = gr.Textbox(label="D")
+        prompt4 = gr.Textbox(label="D-sharp")
+        prompt5 = gr.Textbox(label="E")
+        prompt6 = gr.Textbox(label="F")
     with gr.Row():
-        prompt7 = gr.TextArea(label="F-sharp")
-        prompt8 = gr.TextArea(label="G")
-        prompt9 = gr.TextArea(label="G-sharp")
-        prompt10 = gr.TextArea(label="A")
-        prompt11 = gr.TextArea(label="A-sharp")
-        prompt12 = gr.TextArea(label="B")
+        prompt7 = gr.Textbox(label="F-sharp")
+        prompt8 = gr.Textbox(label="G")
+        prompt9 = gr.Textbox(label="G-sharp")
+        prompt10 = gr.Textbox(label="A")
+        prompt11 = gr.Textbox(label="A-sharp")
+        prompt12 = gr.Textbox(label="B")
     gr.Markdown("# Music Processing Parameters")
     with gr.Row():
         with gr.Column():
