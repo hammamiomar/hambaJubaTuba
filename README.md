@@ -4,7 +4,7 @@
   <img src="gradio.jpeg" alt="GUI Preview" height="500" width="500"/>
 </p>
 
-## [Demo Video](https://youtu.be/hW7U9wsK3io)
+## [Demo Video](https://youtu.be/gcdQ8NizDJM)
 
 ## What is this?
 
