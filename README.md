@@ -4,6 +4,8 @@
   <img src="gradio.jpeg" alt="GUI Preview" height="500" width="500"/>
 </p>
 
+## [Demo Video](https://youtu.be/hW7U9wsK3io)
+
 ## What is this?
 
 In the aims of bringing back the music visualizer to modern day society, this project was made. Visualizations are made via:
